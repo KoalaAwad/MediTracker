@@ -1,0 +1,11 @@
+{
+  "medicine": {
+    "id": 1
+  },
+  "timeOfDay": "08:00:00",
+  "frequency": "DAILY",
+  "startDate": "2025-09-04",
+  "endDate": null,
+  "instructions": "Take with breakfast",
+  "isActive": true
+}

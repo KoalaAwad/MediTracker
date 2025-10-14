@@ -1,0 +1,6 @@
+{
+  "name": "Vitamin D3",
+  "description": "Daily vitamin supplement",
+  "dosageAmount": 1000.0,
+  "dosageUnit": "IU"
+}
