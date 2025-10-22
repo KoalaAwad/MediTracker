@@ -1,23 +1,21 @@
 package org.springbozo.meditracker.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "app_user")
-public class User {
+public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "person_id")
+    private int Personid;
     private String name;
     private String email;
 
-    public User(){}
+    public Person(){}
 
-    public User(String name, String email) {
+    public Person(String name, String email) {
         this.name = name;
         this.email = email;
     }

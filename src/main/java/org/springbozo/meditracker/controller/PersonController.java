@@ -1,27 +1,36 @@
 package org.springbozo.meditracker.controller;
 
 import org.springbozo.meditracker.model.Person;
+import org.springbozo.meditracker.repository.PersonRepository;
 import org.springbozo.meditracker.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-public class UserController {
+@RequestMapping("person")
+public class PersonController {
+
+    private final PersonService personService;
 
     @Autowired
-    private PersonService userService;
-
-    @GetMapping("user/new")
-    public String showUser(Model model) {
-        model.addAttribute("username", new Person());
-        return "AddPerson.html";
+    public PersonController(PersonService personService) {
+        this.personService = personService;
     }
 
-    @PostMapping
-    public String addUser(Model model) {
+    @GetMapping("/display")
+    public String showPerson(Model model) {
+        model.addAttribute("person", new Person());
+        return "/";
+    }
+
+    @PostMapping("/save")
+    public String savePerson(@ModelAttribute("person") Person person) {
+        personService.savePerson(person);
         return "redirect:/";
     }
 }

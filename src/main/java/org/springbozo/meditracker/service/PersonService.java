@@ -1,31 +1,25 @@
 package org.springbozo.meditracker.service;
 
-import org.springbozo.meditracker.model.User;
-import org.springbozo.meditracker.repository.UserRepository;
+import org.springbozo.meditracker.model.Person;
+import org.springbozo.meditracker.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
-public class UserService {
+public class PersonService {
+
+    private PersonRepository personRepository;
+
     @Autowired
-    private UserRepository userRepository;
-
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public PersonService(PersonRepository personRepository) {
+        this.personRepository = personRepository;
     }
 
-    public Iterable<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    public Optional<User> getUserById(Integer id) {
-        return userRepository.findById(id);
-    }
-
-    public void deleteUser(int id){
-        userRepository.deleteById(id);
+    public boolean savePerson(Person person){
+        personRepository.save(person);
+        return true;
     }
 }
 

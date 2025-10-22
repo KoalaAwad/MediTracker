@@ -1,0 +1,34 @@
+<div class="container" xmlns:th="http://www.w3.org/1999/xhtml">
+    <h1 th:text="${medicine.name}">Medicine Name</h1>
+    <p><strong>Dosage:</strong> <span th:text="${medicine.dosage}">Dosage</span></p>
+    <p><strong>Description:</strong> <span th:text="${medicine.description}">Description</span></p>
+
+    <h2>Schedules</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Time</th>
+            <th>Days</th>
+            <th>Condition</th>
+            <th>Interval (days)</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="schedule : ${medicine.schedules}">
+            <td th:text="${schedule.timeOfDay}"></td>
+            <td>
+                <span th:each="day, iterStat : ${schedule.daysOfWeek}" th:text="${day}"
+                      th:append="${!iterStat.last ? ', ' : ''}"></span>
+            </td>
+            <td th:text="${schedule.conditionDescription}"></td>
+            <td th:text="${schedule.intervalDays}"></td>
+            <td th:text="${schedule.startDate}"></td>
+            <td th:text="${schedule.endDate}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a href="/medicines" class="btn btn-secondary">Back to List</a>
+</div>

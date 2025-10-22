@@ -1,7 +1,7 @@
 package org.springbozo.meditracker;
 
-import org.springbozo.meditracker.model.User;
-import org.springbozo.meditracker.repository.UserRepository;
+import org.springbozo.meditracker.model.Person;
+import org.springbozo.meditracker.repository.PersonRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,12 +17,12 @@ public class MediTrackerApplication {
     }
 
     @Bean
-    CommandLineRunner seed(UserRepository repo) {
+    CommandLineRunner seed(PersonRepository repo) {
         return args -> {
             if (repo.count() == 0) { // only seed if empty
                 repo.saveAll(List.of(
-                        new User("Alice", "alice@example.com"),
-                        new User("Bob", "bob@example.com")
+                        new Person("Alice", "alice@example.com"),
+                        new Person("Bob", "bob@example.com")
                 ));
             }
         };
