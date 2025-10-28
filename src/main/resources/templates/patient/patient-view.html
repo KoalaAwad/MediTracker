@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Patient: ' + ${patient.name}">Patient Details</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1 th:text="'Patient: ' + ${patient.name}"></h1>
+
+    <div class="form-group">
+        <label>Email:</label>
+        <p th:text="${patient.email}">example@email.com</p>
+    </div>
+
+    <h2>Prescribed Medicines</h2>
+
+    <div th:if="${#lists.isEmpty(patient.PrescribedMedicine)}">
+        <p>No medicines assigned to this patient.</p>
+    </div>
+
+    <ul th:if="${!#lists.isEmpty(patient.PrescribedMedicine)}">
+        <li th:each="medicine : ${patient.PrescribedMedicine}">
+            <a th:href="@{/medicine/{id}(id=${medicine.id})}"
+               th:text="${medicine.name}"></a>
+        </li>
+    </ul>
+
+    <a class="btn btn-secondary" th:href="@{/patients}">Back to List</a>
+</div>
+</body>
+</html>

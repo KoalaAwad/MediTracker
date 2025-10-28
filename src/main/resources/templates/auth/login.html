@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<div class="container">
+    <h1>Login</h1>
+
+    <div th:if="${param.registered}" style="color: #28a745; margin-bottom: 20px; padding: 10px; background-color: #d4edda; border-radius: 4px;">
+        Registration successful! Please log in.
+    </div>
+
+    <div th:if="${param.error}" style="color: #dc3545; margin-bottom: 20px; padding: 10px; background-color: #f8d7da; border-radius: 4px;">
+        Invalid email or password.
+    </div>
+
+    <div th:if="${param.logout}" style="color: #28a745; margin-bottom: 20px; padding: 10px; background-color: #d4edda; border-radius: 4px;">
+        You have been logged out successfully.
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
+            <label for="username">Email:</label>
+            <input type="email" id="username" name="username" required />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required />
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+    </form>
+
+    <p style="margin-top: 20px;">
+        Don't have an account? <a th:href="@{/register}" style="color: #007bff;">Register here</a>
+    </p>
+</div>
+</body>
+</html>
