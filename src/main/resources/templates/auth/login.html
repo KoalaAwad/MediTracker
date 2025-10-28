@@ -1,6 +1,7 @@
 <!-- templates/auth/login.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
@@ -10,21 +11,33 @@
 <div class="container">
     <h1>Login</h1>
 
-    <form th:action="@{/login}" method="post" class="signin-form">
-        <div class="form-group">
-            <li class="error" th:if="${!#strings.isEmpty(errorMessage)}"
-                th:text="${errorMessage}"></li>
-            <input type="text" name="username" placeholder="Email" class="login-input" required />
-            <input type="password" name="password" placeholder="Password" class="login-input" required />
-            <!-- CSRF token -->
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-        </div>
+    <!-- ✅ If user is not logged in -->
+    <div sec:authorize="isAnonymous()">
+        <form th:action="@{/login}" method="post" class="signin-form">
+            <div class="form-group">
+                <li class="error" th:if="${!#strings.isEmpty(errorMessage)}"
+                    th:text="${errorMessage}"></li>
+                <input type="text" name="username" placeholder="Email" class="login-input" required />
+                <input type="password" name="password" placeholder="Password" class="login-input" required />
+                <!-- CSRF token -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            </div>
 
-        <div class="form-group">
-            <button type="submit" class="btn">Log In</button>
-            <a th:href="@{/register}" class="btn btn-secondary">Register</a>
-        </div>
-    </form>
+            <div class="form-group">
+                <button type="submit" class="btn">Log In</button>
+                <a th:href="@{/register}" class="btn btn-secondary">Register</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- ✅ If user is already logged in -->
+    <div sec:authorize="isAuthenticated()">
+        <p>You are already logged in as <strong sec:authentication="name"></strong>.</p>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
 </div>
 </body>
 </html>

@@ -15,4 +15,5 @@ public class PublicController {
     public String about() {
         return "/public/about";
     }
+
 }
