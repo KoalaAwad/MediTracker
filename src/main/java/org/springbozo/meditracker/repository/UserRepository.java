@@ -1,12 +1,12 @@
 package org.springbozo.meditracker.repository;
 
-import org.springbozo.meditracker.model.Person;
+import org.springbozo.meditracker.model.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
-public interface PersonRepository extends CrudRepository<Person,Integer> {
-    public Optional<Person> findByEmail(String email);
+public interface UserRepository extends CrudRepository<User,Integer> {
+    public User findByEmail(String email);
+
+    public User readByEmail(String email);
 }

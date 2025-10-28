@@ -1,0 +1,16 @@
+<!-- templates/error-page.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<div class="container">
+    <h1>Error Occurred</h1>
+    <p th:text="${errorMessage}">An unexpected error occurred.</p>
+    <a th:href="@{/public/home}" class="btn">Go Home</a>
+</div>
+</body>
+</html>

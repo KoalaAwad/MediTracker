@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Patients</title>
+    <title>User List</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
 <div class="container">
-    <h1>Patients</h1>
-
-    <a class="btn" th:href="@{/patients/new}">Add New Patient</a>
-
-    <ul>
-        <li th:each="patient : ${patients}">
-            <a th:href="@{/patients/{id}(id=${patient.id})}"
-               th:text="${patient.name}">Patient Name</a>
-        </li>
-    </ul>
+    <h1>All Users</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}"></td>
+            <td th:text="${user.name}"></td>
+            <td th:text="${user.email}"></td>
+            <td th:text="${user.role}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <a class="btn btn-secondary" th:href="@{/admin/dashboard}">Back to Dashboard</a>
 </div>
 </body>
 </html>

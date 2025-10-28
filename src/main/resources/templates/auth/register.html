@@ -2,40 +2,36 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 <body>
 <div class="container">
     <h1>Register</h1>
 
-    <div th:if="${error}" style="color: #dc3545; margin-bottom: 20px; padding: 10px; background-color: #f8d7da; border-radius: 4px;">
-        <p th:text="${error}"></p>
-    </div>
-
     <form th:action="@{/register}" th:object="${registration}" method="post">
         <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" id="name" th:field="*{name}" required />
-            <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            <label>Name</label>
+            <input type="text" th:field="*{name}" />
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
         </div>
 
         <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" th:field="*{email}" required />
-            <span class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            <label>Email</label>
+            <input type="email" th:field="*{email}" />
+            <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></span>
         </div>
 
         <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" th:field="*{password}" required />
-            <span class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            <label>Password</label>
+            <input type="password" th:field="*{password}" />
+            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error"></span>
         </div>
 
         <div class="form-group">
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" th:field="*{confirmPassword}" required />
+            <label>Confirm Password</label>
+            <input type="password" th:field="*{confirmPassword}" />
+            <span th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="error"></span>
         </div>
 
         <button type="submit" class="btn">Register</button>

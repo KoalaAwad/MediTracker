@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <p>Welcome, <span th:text="${#authentication.name}">User</span>!</p>
+    <p>Roles:
+        <span th:each="role : ${#authentication.authorities}" th:text="${role.authority} + ' '"></span>
+    </p>
+
+</div>
+</body>
+</html>

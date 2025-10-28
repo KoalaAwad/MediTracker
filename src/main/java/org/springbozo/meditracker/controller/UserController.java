@@ -1,9 +1,10 @@
 package org.springbozo.meditracker.controller;
 
-import org.springbozo.meditracker.model.Person;
-import org.springbozo.meditracker.repository.PersonRepository;
-import org.springbozo.meditracker.service.PersonService;
+import org.springbozo.meditracker.model.User;
+import org.springbozo.meditracker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,26 +12,38 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.Collection;
+import java.util.List;
+
 @Controller
 @RequestMapping("person")
-public class PersonController {
+public class UserController implements UserDetails{
 
-    private final PersonService personService;
+    private final UserService userService;
 
     @Autowired
-    public PersonController(PersonService personService) {
-        this.personService = personService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/display")
     public String showPerson(Model model) {
-        model.addAttribute("person", new Person());
+        model.addAttribute("person", new User());
         return "/";
     }
 
-    @PostMapping("/save")
-    public String savePerson(@ModelAttribute("person") Person person) {
-        personService.savePerson(person);
-        return "redirect:/";
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getPassword() {
+        return "";
+    }
+
+    @Override
+    public String getUsername() {
+        return "";
     }
 }

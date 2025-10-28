@@ -33,14 +33,13 @@ public class MedicineController {
         }
 
         model.addAttribute("medicine", medicineOpt.get());
-        return "medicine-detail";
+        return "prescription-detail";
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public String listMedicines(Model model) {
-        List<Medicine> medicines = medicineService.listMedicines();
-        model.addAttribute("medicines",medicines );
-        return "medicine-all";
+        model.addAttribute("medicines", medicineService.listMedicines());
+        return "prescription-all";
     }
 
 
