@@ -50,7 +50,7 @@ public class AuthController {
         return "auth/login";
     }
 
-    
+
     @RequestMapping(value="/logout", method = RequestMethod.GET)
     public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -68,6 +68,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("registration")RegistrationDto registrationDto,
+
                                BindingResult result) {
         if (result.hasErrors()) {
             return "auth/register";
