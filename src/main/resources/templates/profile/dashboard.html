@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
@@ -11,7 +11,16 @@
     <p>Roles:
         <span th:each="role : ${#authentication.authorities}" th:text="${role.authority} + ' '"></span>
     </p>
-
 </div>
+<nav>
+    <ul>
+        <li><a th:href="@{/home}">Home</a></li>
+        <li><a th:href="@{/about}">About</a></li>
+
+        <li sec:authorize="isAuthenticated()">
+            <a th:href="@{/profile}">My Profile</a>
+        </li>
+    </ul>
+</nav>
 </body>
 </html>

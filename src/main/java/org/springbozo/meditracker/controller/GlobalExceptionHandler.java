@@ -1,28 +1,57 @@
 package org.springbozo.meditracker.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.nio.file.AccessDeniedException;
+
 @ControllerAdvice
-public class GlobalDefaultExceptionHandler {
-    public static final String DEFAULT_ERROR_VIEW = "error";
+public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = Exception.class)
-    public ModelAndView defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        // If the exception has a specific HTTP status, rethrow it
-        if (AnnotationUtils.findAnnotation(e.getClass(), ResponseStatus.class) != null)
-            throw e;
-
-        // Otherwise, render your custom error page
-        ModelAndView mav = new ModelAndView();
-        mav.addObject("exception", e);
-        mav.addObject("url", req.getRequestURL());
-        mav.setViewName(DEFAULT_ERROR_VIEW);
+    private ModelAndView buildErrorView(HttpStatus status, String message) {
+        ModelAndView mav = new ModelAndView("error");
+        mav.addObject("status", status.value());
+        mav.addObject("errorMessage", message);
         return mav;
     }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ModelAndView handleNotFound(NoHandlerFoundException ex) {
+        return buildErrorView(HttpStatus.NOT_FOUND, "The requested page was not found.");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ModelAndView handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
+        return buildErrorView(HttpStatus.METHOD_NOT_ALLOWED, "HTTP method not allowed for this endpoint.");
+    }
+
+    @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentNotValidException.class, IllegalArgumentException.class})
+    public ModelAndView handleBadRequest(Exception ex) {
+        return buildErrorView(HttpStatus.BAD_REQUEST, ex.getMessage() != null ? ex.getMessage() : "Bad request");
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ModelAndView handleAccessDenied(AccessDeniedException ex) {
+        return buildErrorView(HttpStatus.FORBIDDEN, "You do not have permission to access this resource.");
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ModelAndView handleAllExceptions(Exception exception) {
+        String errorMsg = null;
+        if (exception.getMessage() != null) {
+            errorMsg = exception.getMessage();
+        } else if (exception.getCause() != null) {
+            errorMsg = exception.getCause().toString();
+        } else {
+            errorMsg = exception.toString();
+        }
+        return buildErrorView(HttpStatus.INTERNAL_SERVER_ERROR, errorMsg);
+    }
 }
+

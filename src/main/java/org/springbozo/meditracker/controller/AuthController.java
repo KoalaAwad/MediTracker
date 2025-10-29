@@ -40,11 +40,7 @@ public class AuthController {
         } else if (logout != null) {
             errorMessage = "You have been successfully logged out!";
         } else if (register != null) {
-            if (register.equals("true")) {
-                errorMessage = "Registration successful. Login with registered credentials!";
-            } else {
-                errorMessage = "Registration failed. Please try again!";
-            }
+            errorMessage = "Registration successful. Login with registered credentials!";
         }
         model.addAttribute("errorMessage", errorMessage);
         return "auth/login";

@@ -49,7 +49,5 @@ public class Patient {
     @Column(columnDefinition = "TEXT")
     private String allergies;
 
-    @Column()
-    private String role = Constants.PATIENT_ROLE;
 
 }

@@ -42,7 +42,7 @@ public class UserService {
     public boolean register(RegistrationDto registrationDto) {
         User user = new User();
         boolean isSaved = false;
-        Role role = roleRepository.getByRoleName(Constants.PATIENT_ROLE);
+        Role role = roleRepository.getByRoleName(Constants.ADMIN_ROLE);
         user.setRoles(Set.of(role));
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setName(registrationDto.getName());
