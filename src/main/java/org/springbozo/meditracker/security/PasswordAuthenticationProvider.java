@@ -30,10 +30,10 @@ public class PasswordAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication)
             throws AuthenticationException {
 
-        String email = authentication.getName();
+        String email = authentication.getName() != null ? authentication.getName().trim().toLowerCase() : null;
         String password = authentication.getCredentials().toString();
 
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmailIgnoreCase(email);
 
         if (null != user && passwordEncoder.matches(password, user.getPassword())){
             return new UsernamePasswordAuthenticationToken(

@@ -22,8 +22,8 @@ public class Medicine {
     private String description;
 
     @OneToMany(mappedBy = "medicine", cascade = CascadeType.ALL,
-            orphanRemoval = true,targetEntity = Schedule.class, fetch =  FetchType.EAGER)
-    private List<Schedule> schedules = new ArrayList<>();
+            orphanRemoval = true,targetEntity = Prescription.class, fetch =  FetchType.EAGER)
+    private List<Prescription> prescriptions = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "patient_id")

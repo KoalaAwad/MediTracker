@@ -3,7 +3,6 @@ package org.springbozo.meditracker.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
@@ -14,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Schedule {
+public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -45,5 +44,4 @@ public class Schedule {
     //INTERVAL BASED
     @Column(nullable = true)
     private Integer intervalDays;
-
 }

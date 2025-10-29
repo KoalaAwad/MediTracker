@@ -46,7 +46,8 @@ public class UserService {
         user.setRoles(Set.of(role));
         user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
         user.setName(registrationDto.getName());
-        user.setEmail(registrationDto.getEmail());
+        String normalizedEmail = registrationDto.getEmail() != null ? registrationDto.getEmail().trim().toLowerCase() : null;
+        user.setEmail(normalizedEmail);
         isSaved = savePerson(user);
         return isSaved;
     }

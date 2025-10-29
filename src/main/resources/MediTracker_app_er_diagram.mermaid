@@ -1,0 +1,101 @@
+erDiagram
+    USER ||--o{ USER_ROLE : has
+    ROLE ||--o{ USER_ROLE : assigned_to
+    USER ||--o| PATIENT : "is a"
+    USER ||--o| DOCTOR : "is a"
+    PATIENT ||--o{ PATIENT_DOCTOR : "sees"
+    DOCTOR ||--o{ PATIENT_DOCTOR : "treats"
+    PATIENT ||--o{ PRESCRIPTION : "receives"
+    DOCTOR ||--o{ PRESCRIPTION : "assigns"
+    MEDICINE ||--o{ PRESCRIPTION : "prescribed_in"
+    PRESCRIPTION ||--o{ PRESCRIPTION_DOSAGE : "has"
+
+    USER {
+        int user_id PK
+        string username
+        string email
+        string password_hash
+        datetime created_at
+        datetime updated_at
+    }
+
+    ROLE {
+        int role_id PK
+        string role_name
+        string description
+    }
+
+    USER_ROLE {
+        int user_role_id PK
+        int user_id FK
+        int role_id FK
+        datetime assigned_at
+    }
+
+    PATIENT {
+        int patient_id PK
+        int user_id FK
+        string first_name
+        string last_name
+        date date_of_birth
+        string gender
+        string phone
+        string address
+        text medical_history
+    }
+
+    DOCTOR {
+        int doctor_id PK
+        int user_id FK
+        string first_name
+        string last_name
+        string specialization
+        string license_number
+        string phone
+        string clinic_address
+    }
+
+    PATIENT_DOCTOR {
+        int patient_doctor_id PK
+        int patient_id FK
+        int doctor_id FK
+        date relationship_started
+        boolean is_primary_doctor
+        string notes
+    }
+
+    MEDICINE {
+        int medicine_id PK
+        string medicine_name
+        string generic_name
+        string manufacturer
+        string dosage_form
+        string strength
+        text description
+        text side_effects
+        text contraindications
+    }
+
+    PRESCRIPTION {
+        int prescription_id PK
+        int patient_id FK
+        int doctor_id FK
+        int medicine_id FK
+        date start_date
+        date end_date
+        string route
+        string frequency_type
+        int interval_value
+        json day_of_week_pattern
+        text notes
+        datetime created_at
+        datetime updated_at
+    }
+
+    PRESCRIPTION_DOSAGE {
+        int dosage_id PK
+        int prescription_id FK
+        time time_of_day
+        string dosage_amount
+        int dosage_sequence
+    }

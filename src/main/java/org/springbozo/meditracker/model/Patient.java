@@ -37,7 +37,7 @@ public class Patient {
     private Set<Doctor> doctors = new HashSet<>();
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Medicine> PrescribedMedicine = new ArrayList<>();
+    private List<Prescription> PrescribedMedicine = new ArrayList<>();
 
 
     @Column(name = "date_of_birth")
