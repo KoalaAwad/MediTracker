@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
+<body>
+<div class="card">
+    <h1>Something went wrong</h1>
+    <div class="status">Status: <span th:text="${status} != null ? ${status} : 500">500</span></div>
+    <div class="msg" th:text="${errorMessage} != null ? ${errorMessage} : 'An unexpected error occurred.'">An unexpected error occurred.</div>
+
+    <div class="form-group" sec:authorize="isAuthenticated()">
+        <a class="btn" href="/profile/dashboard">Back to Dashboard</a>
+    </div>
+    <div class="form-group" sec:authorize="isAnonymous()">
+        <a class="btn" href="/">Go to Home</a>
+    </div>
+</div>
+</body>
+</html>
