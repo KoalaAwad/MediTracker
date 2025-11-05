@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>User Entity Test</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<h1>User Test</h1>
+<section>
+    <p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
+    <p><strong>Display Name:</strong> <span th:text="${user.name}"></span></p>
+    <p><strong>Username:</strong> <span th:text="${user.username}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    <p><strong>Created At:</strong> <span th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+    <p><strong>Updated At:</strong> <span th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+</section>
+<section>
+    <h2>Roles</h2>
+    <ul>
+        <li th:each="r : ${user.roles}">
+            <strong th:text="${r.roleName}"></strong> - <span th:text="${r.description}"></span>
+        </li>
+    </ul>
+</section>
+</body>
+</html>

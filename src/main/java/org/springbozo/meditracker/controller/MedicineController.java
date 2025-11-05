@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -42,5 +43,18 @@ public class MedicineController {
         return "prescription-all";
     }
 
+    // New plural endpoints for adding medicines from the prescription flow
+    @GetMapping(path = "/../medicines/new")
+    public String newMedicineForm(Model model) {
+        model.addAttribute("medicine", new Medicine());
+        return "medicines/medicine-form";
+    }
+
+    @PostMapping(path = "/../medicines/new")
+    @Transactional
+    public String saveMedicine(Medicine medicine) {
+        medicineService.save(medicine);
+        return "redirect:/prescriptions/new";
+    }
 
 }

@@ -13,6 +13,9 @@ public class RegistrationDto {
     @NotBlank(message = "Name is required")
     private String name;
 
+    @NotBlank(message = "Username is required")
+    private String username;
+
     @Email(message = "Please provide a valid email")
     @NotBlank(message = "Email is required")
     private String email;
