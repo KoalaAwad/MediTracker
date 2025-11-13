@@ -23,7 +23,7 @@ public class ProjectSecurityConfig {
         http
                 .userDetailsService(userDetailsService)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**", "/login", "/register", "/css/**").permitAll()
+                        .requestMatchers("/", "/home", "/public/**", "/login", "/register", "/css/**").permitAll() // Add "/" and "/home"
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/profile/**").hasAnyRole("PATIENT", "ADMIN")
                         .anyRequest().authenticated()
@@ -46,7 +46,6 @@ public class ProjectSecurityConfig {
 
         return http.build();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
