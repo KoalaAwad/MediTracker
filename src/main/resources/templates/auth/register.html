@@ -10,18 +10,10 @@
     <h1>Register</h1>
 
     <form th:action="@{/register}" th:object="${registration}" method="post">
-        <div th:if="${registrationError}" class="error" th:text="${registrationError}"></div>
-
         <div class="form-group">
             <label>Name</label>
             <input type="text" th:field="*{name}" />
             <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></span>
-        </div>
-
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" th:field="*{username}" />
-            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="error"></span>
         </div>
 
         <div class="form-group">

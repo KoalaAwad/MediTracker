@@ -1,9 +1,11 @@
 package org.springbozo.meditracker.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springbozo.meditracker.constants.Constants;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,43 +17,15 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Patient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "patient_id")
-    private Integer id;
-
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
-
-    // Extra fields (not in ER) retained but clearly mapped
-    @Column(name = "blood_type")
-    private String bloodType;
-
-    // Fix: 'name' not 'columnDefinition'
-    @Column(name = "allergies")
-    private String allergies;
-
-    // New fields per ER
-    @Column(length = 20)
-    private String gender;
-
-    @Column(length = 30)
-    private String phone;
-
-    @Column(length = 255)
-    private String address;
-
-    @Column(name = "medical_history")
-    private String medicalHistory;
-
-    @Column(name = "name", nullable = false)
-    private String name;
-
+    private int id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToMany
@@ -65,14 +39,15 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Prescription> PrescribedMedicine = new ArrayList<>();
 
-    @Transient
-    public String getEmail() {
-        return this.user == null ? null : this.user.getEmail();
-    }
 
-    @Transient
-    public String getName() {
-        return this.user == null ? null : this.user.getName();
-    }
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "blood_type")
+    private String bloodType;
+
+    @Column(columnDefinition = "TEXT")
+    private String allergies;
+
 
 }

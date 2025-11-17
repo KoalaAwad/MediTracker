@@ -65,20 +65,15 @@ public class AuthController {
     @PostMapping("/register")
     public String registerUser(@ModelAttribute("registration")RegistrationDto registrationDto,
 
-                               BindingResult result, Model model) {
+                               BindingResult result) {
         if (result.hasErrors()) {
             return "auth/register";
         }
-        // basic password confirmation
-        if (!registrationDto.getPassword().equals(registrationDto.getConfirmPassword())) {
-            model.addAttribute("registrationError", "Passwords do not match");
-            return "auth/register";
+        if(userService.register(registrationDto)){
+            return "redirect:/login?register=false";
         }
-        boolean ok = userService.register(registrationDto);
-        if (ok) {
-            return "redirect:/login?register=true";
-        }
-        model.addAttribute("registrationError", "Username or email already in use");
-        return "auth/register";
+        return "redirect:/login?register=true";
     }
 }
+
+

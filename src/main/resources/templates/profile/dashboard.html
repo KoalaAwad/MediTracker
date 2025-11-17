@@ -15,9 +15,6 @@
 
     <div class="form-group">
         <a class="btn" th:href="@{/profile}">My Profile</a>
-        <span sec:authorize="hasRole('PATIENT')">
-            <a class="btn" th:href="@{/prescriptions/list}">My Prescriptions</a>
-        </span>
         <a class="btn btn-secondary" th:href="@{/home}">Home</a>
         <a class="btn btn-secondary" th:href="@{/about}">About</a>
         <a class="btn btn-danger" th:href="@{/logout}" onclick="event.preventDefault(); this.closest('form')?.submit();" style="display:none;">Logout</a>

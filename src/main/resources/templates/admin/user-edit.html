@@ -10,7 +10,6 @@
 <div class="card">
     <h1>Edit User Roles</h1>
     <p class="status">Update roles for: <strong th:text="${user.email}"></strong></p>
-    <div th:if="${param.error} == 'lastAdmin'" class="error">Cannot remove ADMIN role: at least one admin must remain.</div>
 
     <form th:action="@{'/admin/users/' + ${user.id} + '/edit'}" method="post">
         <div class="form-group">

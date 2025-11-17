@@ -22,7 +22,7 @@ public class PatientController {
     @GetMapping
     public String listPatients(Model model) {
         model.addAttribute("patients", patientService.listPatients());
-        return "patient/patient-list";
+        return "patient-list";
     }
 
     @GetMapping("/{id}")
@@ -30,24 +30,24 @@ public class PatientController {
     public String viewPatient(@PathVariable int id, Model model) {
         var patientOpt = patientService.getPatientById(id);
         if (patientOpt.isEmpty()) {
-            return "public/home";
+            return "redirect:/public/home";
         }
         model.addAttribute("patient", patientOpt.get());
-        return "patient/patient-view";
+        return "patient-view";
     }
 
     @GetMapping("/new")
     public String getAddPatient(Model model){
         model.addAttribute("patient", new Patient());
-        return "patient/patient-form";
+        return "patient-form";
     }
 
     @PostMapping("/add")
     public String addPatient(@ModelAttribute("patient") Patient patient, Model model){
         boolean isSaved = patientService.createNewPerson(patient);
         if(isSaved){
-            return "home";
+            return "redirect:/home";
         }
-        return  "home";
+        return  "redirect:/home";
     }
 }
