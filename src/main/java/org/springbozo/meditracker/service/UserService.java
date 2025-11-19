@@ -1,4 +1,6 @@
 package org.springbozo.meditracker.service;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springbozo.meditracker.DAO.RegistrationDto;
 import org.springbozo.meditracker.constants.Constants;
@@ -11,9 +13,11 @@ import org.springbozo.meditracker.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -28,8 +32,6 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
 
-
-
     public boolean emailExists(String email) {
         if (email == null) return false;
         return userRepository.findByEmail(email).isPresent();
@@ -39,7 +41,7 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
-    public boolean savePerson(User user){
+    public boolean savePerson(User user) {
         userRepository.save(user);
         return true;
     }
@@ -56,7 +58,8 @@ public class UserService {
     }
 
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (email == null) return Optional.empty();
+        return userRepository.findByEmail(email.toLowerCase());
     }
 
     public Optional<User> findById(Integer id) {
@@ -107,5 +110,14 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
+    }
+
+    private Collection<? extends GrantedAuthority> getUserAuthorities(User user) {
+        if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
+            return List.of();
+        }
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
+                .collect(Collectors.toList());
     }
 }

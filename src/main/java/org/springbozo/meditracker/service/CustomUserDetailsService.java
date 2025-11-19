@@ -1,8 +1,10 @@
-package org.springbozo.meditracker.security;
+package org.springbozo.meditracker.service;
 
-import org.springbozo.meditracker.model.Role;
+
 import org.springbozo.meditracker.model.User;
+import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,7 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,26 +21,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    @Autowired
     public CustomUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        // identifier may be username or email
-        var userOpt = userRepository.findByUsernameOrEmail(identifier, identifier);
-        User user = userOpt.orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        Set<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(Role::getRoleName)
-                .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
-                .collect(Collectors.toSet());
-
-        // Spring Security's User class: username must be non-null
-        String usernameForPrincipal = user.getUsername() != null ? user.getUsername() : user.getEmail();
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
+                .collect(Collectors.toList());
 
         return org.springframework.security.core.userdetails.User
-                .withUsername(usernameForPrincipal)
+                .withUsername(user.getEmail())
                 .password(user.getPassword())
                 .authorities(authorities)
                 .accountExpired(false)
@@ -46,5 +45,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .disabled(false)
                 .build();
     }
+
 }
 
