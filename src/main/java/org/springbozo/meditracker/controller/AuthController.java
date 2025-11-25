@@ -1,52 +1,74 @@
 package org.springbozo.meditracker.controller;
 
+import org.springbozo.meditracker.DAO.RegistrationDto;
+import org.springbozo.meditracker.model.User;
+import org.springbozo.meditracker.security.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin
 public class AuthController {
 
+    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
     private final UserDetailsService userDetailsService;
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(AuthenticationManager authManager, UserDetailsService userDetailsService, UserService userService) {
+
+    public AuthController(PasswordEncoder passwordEncoder, AuthenticationManager authManager, UserDetailsService userDetailsService, UserService userService, JwtUtil jwtUtil) {
+        this.passwordEncoder = passwordEncoder;
         this.authManager = authManager;
         this.userDetailsService = userDetailsService;
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/login")
-    // returns user object with only username
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-        try {
-            String email = body.get("email");
-            String password = body.get("password");
+        String rawEmail = body.get("email");
+        String rawPassword = body.get("password");
 
-            Authentication auth = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Login successful",
-                    "user", auth.getName()
-                    ));
-        }catch (Exception ex){
-            return ResponseEntity.status(401).body(Map.of(
-                    "error", "Invalid email or password"
-            ));
+        if (rawEmail == null || rawEmail.isBlank() || rawPassword == null || rawPassword.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
         }
 
+        String email = rawEmail.trim().toLowerCase();
+
+        try {
+            Authentication authentication = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, rawPassword)
+            );
+
+            String username = authentication.getName();
+            if (username == null || username.isBlank()) {
+                username = email; // fallback
+            }
+
+            return ResponseEntity.ok(Map.of("token", jwtUtil.generateToken(username)));
+        } catch (Exception ex) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegistrationDto dto) {
+        boolean created = userService.register(dto);
+        if (!created) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Registration failed or user already exists"));
+        }
+        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
     }
 
     @PostMapping("/logout")

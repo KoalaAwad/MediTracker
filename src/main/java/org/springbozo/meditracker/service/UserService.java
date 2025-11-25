@@ -1,23 +1,20 @@
 package org.springbozo.meditracker.service;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springbozo.meditracker.DAO.RegistrationDto;
 import org.springbozo.meditracker.constants.Constants;
+import org.springbozo.meditracker.model.Patient;
 import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;
-import org.springbozo.meditracker.model.Patient;
+import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.RoleRepository;
 import org.springbozo.meditracker.repository.UserRepository;
-import org.springbozo.meditracker.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -31,60 +28,44 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
     public boolean emailExists(String email) {
         if (email == null) return false;
-        return userRepository.findByEmail(email).isPresent();
+        return userRepository.findByEmail(email.toLowerCase()).isPresent();
     }
 
-    public boolean usernameExists(String username) {
-        return userRepository.existsByUsername(username);
+    public Optional<User> findByEmail(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+        return userRepository.findByEmail(identifier.trim().toLowerCase());
     }
 
-    public boolean savePerson(User user) {
-        userRepository.save(user);
-        return true;
-    }
+    @Transactional
+    public boolean register(RegistrationDto dto) {
+        if (dto == null) return false;
 
-    public Optional<User> findByUsernameOrEmail(String identifier) {
-        if (identifier == null) return Optional.empty();
-        Optional<User> byUsername = userRepository.findByUsername(identifier);
-        if (byUsername.isPresent()) return byUsername;
-        return userRepository.findByEmail(identifier.toLowerCase());
-    }
+        String email = (dto.getEmail() != null) ? dto.getEmail().trim().toLowerCase() : null;
+        String password = dto.getPassword();
 
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Optional<User> findByEmail(String email) {
-        if (email == null) return Optional.empty();
-        return userRepository.findByEmail(email.toLowerCase());
-    }
-
-    public Optional<User> findById(Integer id) {
-        return userRepository.findById(id);
-    }
-
-    public boolean register(RegistrationDto registrationDto) {
-        // check email and username
-        String normalizedEmail = registrationDto.getEmail() != null ? registrationDto.getEmail().trim().toLowerCase() : null;
-        String username = registrationDto.getUsername() != null ? registrationDto.getUsername().trim() : null;
-        if (normalizedEmail == null || username == null) {
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
             return false;
         }
-        if (userRepository.existsByEmail(normalizedEmail) || userRepository.existsByUsername(username)) {
-            return false; // conflict
+
+        if (userRepository.existsByEmail(email)) {
+            return false; // already exists
         }
 
         User user = new User();
-        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
-        user.setName(registrationDto.getName());
-        user.setEmail(normalizedEmail);
-        // set username from DTO
-        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
 
-        // assign PATIENT role by default
+        String name = dto.getName();
+        if (name == null || name.isBlank()) {
+            // derive simple display name from email local part
+            name = email.contains("@") ? email.substring(0, email.indexOf('@')) : "User";
+        }
+        user.setName(name);
+
         Role patientRole = roleRepository.getByRoleName(Constants.PATIENT_ROLE);
         if (patientRole == null) {
             patientRole = new Role();
@@ -93,31 +74,13 @@ public class UserService {
         }
         user.setRoles(Set.of(patientRole));
 
-        // save user
         User saved = userRepository.save(user);
 
-        // create corresponding Patient row and link to user
         Patient patient = new Patient();
         patient.setUser(saved);
-        // set patient.name to user's display name to satisfy NOT NULL constraint
         patient.setName(saved.getName());
-        // set defaults if necessary
         patientRepository.save(patient);
 
         return true;
-    }
-
-
-    public List<User> getAllUsers() {
-        return (List<User>) userRepository.findAll();
-    }
-
-    private Collection<? extends GrantedAuthority> getUserAuthorities(User user) {
-        if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
-            return List.of();
-        }
-        return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
-                .collect(Collectors.toList());
     }
 }

@@ -40,7 +40,7 @@ public class ProfileController {
     public String profileView(Authentication authentication, Model model) {
         if (authentication == null) return "redirect:/login";
         String identifier = authentication.getName();
-        Optional<User> userOpt = userService.findByUsernameOrEmail(identifier);
+        Optional<User> userOpt = userService.findByEmail(identifier);
         if (userOpt.isEmpty()) return "redirect:/login";
         User user = userOpt.get();
 
@@ -72,7 +72,7 @@ public class ProfileController {
     public String editProfile(Authentication authentication, Model model) {
         if (authentication == null) return "redirect:/login";
         String username = authentication.getName();
-        Optional<User> userOpt = userService.findByUsernameOrEmail(username);
+        Optional<User> userOpt = userService.findByEmail(username);
         if (userOpt.isEmpty()) {
             return "redirect:/login";
         }
@@ -100,7 +100,7 @@ public class ProfileController {
     public String saveProfile(@ModelAttribute("patient") Patient patient, Authentication authentication) {
         if (authentication == null) return "redirect:/login";
         String username = authentication.getName();
-        Optional<User> userOpt = userService.findByUsernameOrEmail(username);
+        Optional<User> userOpt = userService.findByEmail(username);
         if (userOpt.isEmpty()) return "redirect:/login";
 
         User user = userOpt.get();

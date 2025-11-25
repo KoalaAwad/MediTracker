@@ -40,7 +40,7 @@ public class PrescriptionController {
     @GetMapping("/list")
     public String listPatientPrescriptions(Authentication authentication, Model model) {
         if (authentication == null) return "redirect:/login";
-        Optional<User> userOpt = userService.findByUsernameOrEmail(authentication.getName());
+        Optional<User> userOpt = userService.findByEmail(authentication.getName());
         if (userOpt.isEmpty()) return "redirect:/login";
         User user = userOpt.get();
         // get patient id
@@ -71,7 +71,7 @@ public class PrescriptionController {
                                    Authentication authentication,
                                    Model model) {
         if (authentication == null) return "redirect:/login";
-        Optional<User> userOpt = userService.findByUsernameOrEmail(authentication.getName());
+        Optional<User> userOpt = userService.findByEmail(authentication.getName());
         if (userOpt.isEmpty()) return "redirect:/login";
         var user = userOpt.get();
         var patientOpt = patientService.getPatientByUserId(Integer.valueOf(user.getId()));

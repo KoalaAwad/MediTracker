@@ -1,26 +1,24 @@
-import { useState, React } from "react";
-import { login } from "../../api/auth.js";
-import { useAuth } from "../../context/AuthContext.jsx";
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const { login } = useAuth();
 
-  const { login: setUser } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError(null);
 
     try {
-      await login(username, password);
-      setUser({ name: username });
+      await login({ email, password });
       navigate("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       setError(err.error || err.message || "Login failed");
     }
   };
@@ -31,8 +29,8 @@ export default function LoginForm() {
       <input
         type="text"
         placeholder="Email"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         required
       />
       <input
@@ -42,7 +40,7 @@ export default function LoginForm() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <button type="submut">Login</button>
+      <button type="submit">Login</button>
     </form>
   );
 }

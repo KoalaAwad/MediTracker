@@ -21,17 +21,11 @@ public class User{
     @Column(name = "user_id")
     private int Id;
 
-    // Existing display name kept for compatibility
     private String name;
-
-    // New explicit username per ERD
-    @Column(name = "username", unique = true)
+    @Column(name = "username")
     private String username;
-
     @Column(unique = true, nullable = false)
     private String email;
-
-    // Map to password_hash per ERD
     @Column(name = "password", nullable = false)
     private String password;
 
