@@ -16,6 +16,12 @@ import {
   Alert,
   IconButton,
   Snackbar,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -31,17 +37,35 @@ export default function UsersList() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [onlyRole, setOnlyRole] = useState(false);
   const navigate = useNavigate();
 
-  const fetchUsers = async () => {
+  const fetchRoles = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const res = await adminApi.getAvailableRoles(token);
+      setRoles(res.data.roles);
+    } catch (err: any) {
+      // ignore silently or setError
+      console.error("Failed to load roles", err);
+    }
+  };
+
+  const fetchUsers = async (role?: string | null, only?: boolean) => {
+    try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/unauthorized");
         return;
       }
 
-      const response = await adminApi.getAllUsers(token);
+      console.debug("fetchUsers called with", { role, only });
+      const response = await adminApi.getAllUsers(token, role, only);
+      console.debug("adminApi.getAllUsers response", { params: response.config.params, url: response.request?.responseURL, count: response.data?.users?.length });
       setUsers(response.data.users);
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -57,8 +81,16 @@ export default function UsersList() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchRoles();
+    fetchUsers(selectedRole, onlyRole);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
+
+  useEffect(() => {
+    // when filters change, refetch
+    fetchUsers(selectedRole, onlyRole);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRole, onlyRole]);
 
   const handleEditClick = (user: UserDto) => {
     setSelectedUser(user);
@@ -78,7 +110,7 @@ export default function UsersList() {
       await adminApi.updateUserRoles(token, { userId, roles });
       setSuccessMessage("User roles updated successfully");
       setEditDialogOpen(false);
-      fetchUsers();
+      fetchUsers(selectedRole, onlyRole);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to update user roles");
     }
@@ -92,7 +124,7 @@ export default function UsersList() {
       await adminApi.deleteUser(token, userId);
       setSuccessMessage("User deleted successfully");
       setDeleteDialogOpen(false);
-      fetchUsers();
+      fetchUsers(selectedRole, onlyRole);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to delete user");
     }
@@ -144,6 +176,38 @@ export default function UsersList() {
               {error}
             </Alert>
           )}
+
+          {/* Filters: role dropdown + only checkbox */}
+          <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel id="role-select-label">Filter by role</InputLabel>
+              <Select
+                labelId="role-select-label"
+                value={selectedRole || ""}
+                label="Filter by role"
+                onChange={(e) => setSelectedRole(e.target.value || null)}
+                size="small"
+              >
+                <MenuItem value="">All</MenuItem>
+                {roles.map((r) => (
+                  <MenuItem key={r} value={r}>
+                    {r}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={onlyRole}
+                  onChange={(e) => setOnlyRole(e.target.checked)}
+                />
+              }
+              label="Only users with this role"
+            />
+
+          </Box>
 
           <TableContainer>
             <Table>
@@ -222,4 +286,3 @@ export default function UsersList() {
     </Box>
   );
 }
-

@@ -5,6 +5,7 @@ import org.springbozo.meditracker.constants.Constants;
 import org.springbozo.meditracker.model.Patient;
 import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;
+import org.springbozo.meditracker.repository.DoctorRepository;
 import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.RoleRepository;
 import org.springbozo.meditracker.repository.UserRepository;
@@ -26,6 +27,8 @@ public class UserService {
     private RoleRepository roleRepository;
     @Autowired
     private PatientRepository patientRepository;
+    @Autowired
+    private DoctorRepository doctorRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -78,16 +81,93 @@ public class UserService {
             for (String roleName : roleNames) {
                 Role role = roleRepository.getByRoleName(roleName);
                 if (role == null) {
-                    // Role doesn't exist - reject the request
                     return false;
                 }
                 newRoles.add(role);
             }
 
+            Set<String> existingRoleNames = user.getRoles().stream().map(Role::getRoleName).collect(java.util.stream.Collectors.toSet());
+            Set<String> requestedRoleNames = new java.util.HashSet<>(roleNames);
+
+            // the new roles that i give you
+            Set<String> added = new java.util.HashSet<>(requestedRoleNames);
+            added.removeAll(existingRoleNames);
+
+            // the roles that i take away from you
+            Set<String> removed = new java.util.HashSet<>(existingRoleNames);
+            removed.removeAll(requestedRoleNames);
+
+            // Apply role set
             user.setRoles(newRoles);
             userRepository.save(user);
+
+            // Handle entity mapping for patient/doctor roles using soft-delete (active flag)
+            // If patient role added -> create or reactivate Patient
+            if (added.contains(Constants.PATIENT_ROLE)) {
+                Patient patient = patientRepository.findByUserId(user.getId()).orElse(null);
+                if (patient == null) {
+                    patient = new Patient();
+                    patient.setUser(user);
+                    patient.setName(user.getName());
+                    patient.setActive(true);
+                    patientRepository.save(patient);
+                    user.setPatient(patient);
+                    userRepository.save(user);
+                } else if (!patient.isActive()) {
+                    patient.setActive(true);
+                    patientRepository.save(patient);
+                }
+            }
+
+            // If patient role removed -> mark inactive but keep data
+            if (removed.contains(Constants.PATIENT_ROLE)) {
+                Patient patient = patientRepository.findByUserId(user.getId()).orElse(null);
+                if (patient != null && patient.isActive()) {
+                    patient.setActive(false);
+                    patientRepository.save(patient);
+                }
+            }
+
+            // If doctor role added -> create or reactivate Doctor record
+            if (added.contains(Constants.DOCTOR_ROLE)) {
+                org.springbozo.meditracker.model.Doctor doctor = doctorRepository.findByUserId(user.getId()).orElse(null);
+                if (doctor == null) {
+                    doctor = new org.springbozo.meditracker.model.Doctor();
+                    doctor.setUser(user);
+                    // derive firstName and lastName from user's name (DB requires last_name NOT NULL)
+                    String fullName = user.getName();
+                    if (fullName == null || fullName.isBlank()) {
+                        // leave names null; doctor profile optional
+                        doctor.setFirstName(null);
+                        doctor.setLastName(null);
+                    } else {
+                        String[] parts = fullName.trim().split("\\s+", 2);
+                        doctor.setFirstName(parts[0]);
+                        doctor.setLastName(parts.length > 1 ? parts[1] : null);
+                    }
+                    doctor.setActive(true);
+                    doctorRepository.save(doctor);
+                } else if (!doctor.isActive()) {
+                    doctor.setActive(true);
+                    doctorRepository.save(doctor);
+                }
+            }
+
+            // If doctor role removed -> mark inactive but preserve data
+            if (removed.contains(Constants.DOCTOR_ROLE)) {
+                var docOpt = doctorRepository.findByUserId(user.getId());
+                if (docOpt.isPresent()) {
+                    var d = docOpt.get();
+                    if (d.isActive()) {
+                        d.setActive(false);
+                        doctorRepository.save(d);
+                    }
+                }
+            }
+
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -148,9 +228,14 @@ public class UserService {
         Patient patient = new Patient();
         patient.setUser(saved);
         patient.setName(saved.getName());
+        patient.setActive(true);
         patientRepository.save(patient);
 
         return true;
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
     }
 
     public boolean hasDoctorRole(String email) {
@@ -166,5 +251,22 @@ public class UserService {
         User user = userOpt.get();
         return user.getRoles().stream()
                 .anyMatch(role -> Constants.DOCTOR_ROLE.equals(role.getRoleName()));
+    }
+
+    public List<User> getUsersByRole(String roleName) {
+        if (roleName == null || roleName.isBlank()) {
+            return getAllUsers();
+        }
+        return userRepository.findByRoleName(roleName);
+    }
+    public List<User> getUsersWithOnlyRole(String roleName) {
+        if (roleName == null || roleName.isBlank()) {
+            return List.of();
+        }
+        return userRepository.findByOnlyRoleName(roleName);
+    }
+
+    public List<User> getUsersFilteredByRole(String roleName, boolean only) {
+        return only ? getUsersWithOnlyRole(roleName) : getUsersByRole(roleName);
     }
 }

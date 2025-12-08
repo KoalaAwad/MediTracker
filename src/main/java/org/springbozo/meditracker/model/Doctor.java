@@ -19,10 +19,11 @@ public class Doctor {
     @Column(name = "doctor_id")
     private Integer id;
 
-    @Column(name = "first_name", length = 120, nullable = false)
+    // Make these nullable so doctor profile is optional
+    @Column(name = "first_name", length = 120)
     private String firstName;
 
-    @Column(name = "last_name", length = 120, nullable = false)
+    @Column(name = "last_name", length = 120)
     private String lastName;
 
     @Column(length = 150)
@@ -43,4 +44,8 @@ public class Doctor {
 
     @ManyToMany(mappedBy = "doctors")
     private Set<Patient> patients = new HashSet<>();
+
+    // Active flag so records are soft-disabled when role removed
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
 }

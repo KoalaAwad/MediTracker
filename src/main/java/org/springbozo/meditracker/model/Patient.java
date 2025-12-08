@@ -65,6 +65,10 @@ public class Patient {
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Prescription> PrescribedMedicine = new ArrayList<>();
 
+    // Active flag: when role removed, mark inactive instead of deleting record
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
+
     @Transient
     public String getEmail() {
         return this.user == null ? null : this.user.getEmail();

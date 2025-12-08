@@ -4,6 +4,8 @@ import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;
 import org.springbozo.meditracker.security.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
+import org.springbozo.meditracker.repository.PatientRepository;
+import org.springbozo.meditracker.repository.DoctorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +21,21 @@ public class AdminRestController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
 
-    public AdminRestController(UserService userService, JwtUtil jwtUtil) {
+    public AdminRestController(UserService userService, JwtUtil jwtUtil, PatientRepository patientRepository, DoctorRepository doctorRepository) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getAllUsers(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(name = "role", required = false) String role,
+            @RequestParam(name = "only", required = false, defaultValue = "false") boolean only) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
@@ -47,11 +56,16 @@ public class AdminRestController {
                 return ResponseEntity.status(403).body(Map.of("error", "Forbidden: Admin access required"));
             }
 
-            List<User> users = userService.getAllUsers();
+            List<User> users;
+            if (role != null && !role.isBlank()) {
+                users = userService.getUsersFilteredByRole(role, only);
+            } else {
+                users = userService.getAllUsers();
+            }
 
             List<Map<String, Object>> userDtos = users.stream().map(user -> {
                 String roles = user.getRoles().stream()
-                        .map(role -> role.getRoleName())
+                        .map(r -> r.getRoleName())
                         .reduce((a, b) -> a + "," + b)
                         .orElse("USER");
 
@@ -61,6 +75,11 @@ public class AdminRestController {
                 userMap.put("email", user.getEmail());
                 userMap.put("role", roles);
                 userMap.put("createdAt", user.getCreatedAt().toString());
+                // include patient/doctor active flags
+                boolean patientActive = patientRepository.findByUserId(user.getId()).map(p -> p.isActive()).orElse(false);
+                boolean doctorActive = doctorRepository.findByUserId(user.getId()).map(d -> d.isActive()).orElse(false);
+                userMap.put("patientActive", patientActive);
+                userMap.put("doctorActive", doctorActive);
                 return userMap;
             }).collect(Collectors.toList());
 
@@ -184,4 +203,3 @@ public class AdminRestController {
         }
     }
 }
-
