@@ -35,6 +35,9 @@ public class User{
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Patient patient;
+
     // Audit timestamps
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -57,6 +58,55 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
+    }
+
+    public List<Role> getAllRoles() {
+        return (List<Role>) roleRepository.findAll();
+    }
+
+    @Transactional
+    public boolean updateUserRoles(int userId, List<String> roleNames) {
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return false;
+            }
+
+            User user = userOpt.get();
+            Set<Role> newRoles = new HashSet<>();
+
+            for (String roleName : roleNames) {
+                Role role = roleRepository.getByRoleName(roleName);
+                if (role == null) {
+                    // Role doesn't exist - reject the request
+                    return false;
+                }
+                newRoles.add(role);
+            }
+
+            user.setRoles(newRoles);
+            userRepository.save(user);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Transactional
+    public boolean deleteUser(int userId) {
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isEmpty()) {
+                return false;
+            }
+
+            User user = userOpt.get();
+            userRepository.delete(user);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package org.springbozo.meditracker.controller;
 
+import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;
 import org.springbozo.meditracker.security.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
@@ -67,6 +68,119 @@ public class AdminRestController {
 
         } catch (Exception ex) {
             return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+        }
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<?> getAvailableRoles(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+
+            String token = authHeader.substring(7);
+
+            if (!jwtUtil.ValidateJwtToken(token)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+            }
+
+            String email = jwtUtil.getUserFromToken(token);
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token payload"));
+            }
+
+            if (!userService.hasAdminRole(email)) {
+                return ResponseEntity.status(403).body(Map.of("error", "Forbidden: Admin access required"));
+            }
+
+            List<Role> roles = userService.getAllRoles();
+            List<String> roleNames = roles.stream()
+                    .map(Role::getRoleName)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(Map.of("roles", roleNames));
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+        }
+    }
+
+    @PutMapping("/users/{userId}/roles")
+    public ResponseEntity<?> updateUserRoles(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable int userId,
+            @RequestBody Map<String, List<String>> body) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+
+            String token = authHeader.substring(7);
+
+            if (!jwtUtil.ValidateJwtToken(token)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+            }
+
+            String email = jwtUtil.getUserFromToken(token);
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token payload"));
+            }
+
+            if (!userService.hasAdminRole(email)) {
+                return ResponseEntity.status(403).body(Map.of("error", "Forbidden: Admin access required"));
+            }
+
+            List<String> roles = body.get("roles");
+            if (roles == null || roles.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Roles list cannot be empty"));
+            }
+
+            boolean updated = userService.updateUserRoles(userId, roles);
+            if (!updated) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Failed to update user roles"));
+            }
+
+            return ResponseEntity.ok(Map.of("message", "User roles updated successfully"));
+
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+        }
+    }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<?> deleteUser(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable int userId) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+
+            String token = authHeader.substring(7);
+
+            if (!jwtUtil.ValidateJwtToken(token)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+            }
+
+            String email = jwtUtil.getUserFromToken(token);
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token payload"));
+            }
+
+            if (!userService.hasAdminRole(email)) {
+                return ResponseEntity.status(403).body(Map.of("error", "Forbidden: Admin access required"));
+            }
+
+            boolean deleted = userService.deleteUser(userId);
+            if (!deleted) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User not found or could not be deleted"));
+            }
+
+            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + ex.getMessage()));
         }
     }
 }
