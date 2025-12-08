@@ -53,10 +53,24 @@ public class AuthController {
 
             String username = authentication.getName();
             if (username == null || username.isBlank()) {
-                username = email; // fallback
+                username = email;
             }
 
-            return ResponseEntity.ok(Map.of("token", jwtUtil.generateToken(username)));
+            // Fetch user to get roles
+            User user = userService.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Extract role names
+            String roles = user.getRoles().stream()
+                    .map(role -> role.getRoleName())
+                    .reduce((a, b) -> a + "," + b)
+                    .orElse("USER");
+
+            return ResponseEntity.ok(Map.of(
+                    "token", jwtUtil.generateToken(username),
+                    "email", email,
+                    "role", roles
+            ));
         } catch (Exception ex) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
         }
@@ -76,72 +90,43 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Logged out"));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+
+            String token = authHeader.substring(7);
+
+            if (!jwtUtil.ValidateJwtToken(token)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+            }
 
 
+            String email = jwtUtil.getUserFromToken(token);
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token payload"));
+            }
 
+            // Fetch user details
+            User user = userService.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
+            // Extract role names
+            String roles = user.getRoles().stream()
+                    .map(role -> role.getRoleName())
+                    .reduce((a, b) -> a + "," + b)
+                    .orElse("USER");
 
-
-
-
-
-
-
-
-//    DEPRECATED - using REST endpoint for login instead
-//
-//    @RequestMapping(value = "/login", method = {RequestMethod.GET, RequestMethod.POST})
-//    public String displayLoginPage(
-//            @RequestParam(value = "error", required = false) String error,
-//            @RequestParam(value = "logout", required = false) String logout,
-//            @RequestParam(value = "register", required = false) String register,
-//            Model model) {
-//
-//        String errorMessage = null;
-//        if (error != null) {
-//            errorMessage = "Username or Password is incorrect!";
-//        } else if (logout != null) {
-//            errorMessage = "You have been successfully logged out!";
-//        } else if (register != null) {
-//            errorMessage = "Registration successful. Login with registered credentials!";
-//        }
-//        model.addAttribute("errorMessage", errorMessage);
-//        return "auth/login";
-//    }
-//
-//
-//    @RequestMapping(value="/logout", method = RequestMethod.GET)
-//    public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        if (auth != null){
-//            new SecurityContextLogoutHandler().logout(request, response, auth);
-//        }
-//        return "redirect:/login?logout=true";
-//    }
-//
-//    @GetMapping("/register")
-//    public String registerForm(Model model) {
-//        model.addAttribute("registration", new RegistrationDto());
-//        return "auth/register";
-//    }
-//
-//    @PostMapping("/register")
-//    public String registerUser(@ModelAttribute("registration")RegistrationDto registrationDto,
-//
-//                               BindingResult result, Model model) {
-//        if (result.hasErrors()) {
-//            return "auth/register";
-//        }
-//        // basic password confirmation
-//        if (!registrationDto.getPassword().equals(registrationDto.getConfirmPassword())) {
-//            model.addAttribute("registrationError", "Passwords do not match");
-//            return "auth/register";
-//        }
-//        boolean ok = userService.register(registrationDto);
-//        if (ok) {
-//            return "redirect:/login?register=true";
-//        }
-//        model.addAttribute("registrationError", "Username or email already in use");
-//        return "auth/register";
-//    }
+            return ResponseEntity.ok(Map.of(
+                    "email", user.getEmail(),
+                    "name", user.getName(),
+                    "role", roles,
+                    "userId", user.getId()
+            ));
+        } catch (Exception ex) {
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication failed"));
+        }
+    }
 }
