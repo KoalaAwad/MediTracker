@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +40,25 @@ public class UserService {
         return userRepository.findByEmail(identifier.trim().toLowerCase());
     }
 
+    public boolean hasAdminRole(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+
+        Optional<User> userOpt = findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+
+        User user = userOpt.get();
+        return user.getRoles().stream()
+                .anyMatch(role -> Constants.ADMIN_ROLE.equals(role.getRoleName()));
+    }
+
+    public List<User> getAllUsers() {
+        return (List<User>) userRepository.findAll();
+    }
+
     @Transactional
     public boolean register(RegistrationDto dto) {
         if (dto == null) return false;
@@ -51,7 +71,7 @@ public class UserService {
         }
 
         if (userRepository.existsByEmail(email)) {
-            return false; // already exists
+            return false; // alreay exists
         }
 
         User user = new User();

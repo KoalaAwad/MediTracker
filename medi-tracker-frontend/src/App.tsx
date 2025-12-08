@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-            import { AuthProvider, useAuth } from './context/AuthContext';
-            import { ErrorBoundary } from './components/ErrorBoundary';
-            import Login from './pages/auth/Login';
-            import Register from './pages/auth/Register';
-            import Dashboard from './pages/profile/DashboardPage';
-            import NotFound from './pages/NotFound';
-            import Unauthorized from './pages/Unauthorized';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import Dashboard from './pages/profile/DashboardPage';
+import UsersPage from './pages/admin/UsersPage';
+import NotFound from './pages/NotFound';
+import Unauthorized from './pages/Unauthorized';
 
             // Protected Route Component
             function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -41,6 +42,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
                           element={
                             <ProtectedRoute>
                               <Dashboard />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        <Route
+                          path="/admin/users"
+                          element={
+                            <ProtectedRoute>
+                              <UsersPage />
                             </ProtectedRoute>
                           }
                         />
