@@ -1,0 +1,114 @@
+import { useAuth } from "../../context/AuthContext";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const { user, logout, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">You need to log in first</p>
+          <Link
+            to="/login"
+            className="text-blue-600 hover:text-blue-500 font-medium"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const isAdmin = user.role.includes("ADMIN");
+  const isPatient = user.role.includes("PATIENT");
+
+  return (
+    <div className="page-container">
+      <nav className="nav-header">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-xl font-bold text-gray-900">MediTracker</h1>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate("/profile")}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm"
+              >
+                My Profile
+              </button>
+              <button
+                onClick={logout}
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors text-sm"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="dashboard-card mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Welcome back, {user.name}!
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="dashboard-info-card bg-blue-50">
+              <p className="text-gray-600 font-medium">Email</p>
+              <p className="text-gray-900">{user.email}</p>
+            </div>
+            <div className="dashboard-info-card bg-green-50">
+              <p className="text-gray-600 font-medium">Role</p>
+              <p className="text-gray-900">{user.role}</p>
+            </div>
+            <div className="dashboard-info-card bg-purple-50">
+              <p className="text-gray-600 font-medium">User ID</p>
+              <p className="text-gray-900">{user.userId}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-card">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Actions
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <button
+              className="dashboard-button"
+              onClick={() => navigate("/medicine")}
+            >
+              + View Medicine
+            </button>
+            {isPatient && (
+              <>
+                <button className="dashboard-button">+ Add Medicine</button>
+                <button className="dashboard-button">+ View Prescription</button>
+              </>
+            )}
+            {isAdmin && (
+              <button
+                className="dashboard-button"
+                onClick={() => navigate("/admin/users")}
+              >
+                + View Users
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
