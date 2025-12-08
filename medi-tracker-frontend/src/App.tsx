@@ -4,6 +4,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/profile/DashboardPage';
+import ProfilePage from './pages/profile/ProfilePage';
 import UsersPage from './pages/admin/UsersPage';
 import MedicineListPage from './pages/medicine/MedicineListPage';
 import MedicineFormPage from './pages/medicine/MedicineFormPage';
@@ -44,6 +45,15 @@ import Unauthorized from './pages/Unauthorized';
                           element={
                             <ProtectedRoute>
                               <Dashboard />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        <Route
+                          path="/profile"
+                          element={
+                            <ProtectedRoute>
+                              <ProfilePage />
                             </ProtectedRoute>
                           }
                         />

@@ -104,18 +104,23 @@ public class UserService {
             // Handle entity mapping for patient/doctor roles using soft-delete (active flag)
             // If patient role added -> create or reactivate Patient
             if (added.contains(Constants.PATIENT_ROLE)) {
-                Patient patient = patientRepository.findByUserId(user.getId()).orElse(null);
-                if (patient == null) {
-                    patient = new Patient();
+                Optional<Patient> patientOpt = patientRepository.findByUserId(user.getId());
+                if (patientOpt.isPresent()) {
+                    // Found existing patient (possibly inactive) -> reactivate if needed
+                    Patient patient = patientOpt.get();
+                    if (!patient.isActive()) {
+                        patient.setActive(true);
+                        patientRepository.save(patient);
+                    }
+                } else {
+                    // No existing patient record -> create new one
+                    Patient patient = new Patient();
                     patient.setUser(user);
                     patient.setName(user.getName());
                     patient.setActive(true);
                     patientRepository.save(patient);
                     user.setPatient(patient);
                     userRepository.save(user);
-                } else if (!patient.isActive()) {
-                    patient.setActive(true);
-                    patientRepository.save(patient);
                 }
             }
 
@@ -130,9 +135,17 @@ public class UserService {
 
             // If doctor role added -> create or reactivate Doctor record
             if (added.contains(Constants.DOCTOR_ROLE)) {
-                org.springbozo.meditracker.model.Doctor doctor = doctorRepository.findByUserId(user.getId()).orElse(null);
-                if (doctor == null) {
-                    doctor = new org.springbozo.meditracker.model.Doctor();
+                Optional<org.springbozo.meditracker.model.Doctor> doctorOpt = doctorRepository.findByUserId(user.getId());
+                if (doctorOpt.isPresent()) {
+                    // Found existing doctor (possibly inactive) -> reactivate if needed
+                    org.springbozo.meditracker.model.Doctor doctor = doctorOpt.get();
+                    if (!doctor.isActive()) {
+                        doctor.setActive(true);
+                        doctorRepository.save(doctor);
+                    }
+                } else {
+                    // No existing doctor record -> create new one
+                    org.springbozo.meditracker.model.Doctor doctor = new org.springbozo.meditracker.model.Doctor();
                     doctor.setUser(user);
                     // derive firstName and lastName from user's name (DB requires last_name NOT NULL)
                     String fullName = user.getName();
@@ -145,9 +158,6 @@ public class UserService {
                         doctor.setFirstName(parts[0]);
                         doctor.setLastName(parts.length > 1 ? parts[1] : null);
                     }
-                    doctor.setActive(true);
-                    doctorRepository.save(doctor);
-                } else if (!doctor.isActive()) {
                     doctor.setActive(true);
                     doctorRepository.save(doctor);
                 }
@@ -268,5 +278,61 @@ public class UserService {
 
     public List<User> getUsersFilteredByRole(String roleName, boolean only) {
         return only ? getUsersWithOnlyRole(roleName) : getUsersByRole(roleName);
+    }
+
+    /**
+     * Build a profile DTO for the given user including roles and role-specific data (patient, doctor).
+     */
+    public org.springbozo.meditracker.DAO.ProfileDto buildProfileDto(User user) {
+        if (user == null) return null;
+
+        org.springbozo.meditracker.DAO.ProfileDto profile = new org.springbozo.meditracker.DAO.ProfileDto(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRoles().stream().map(Role::getRoleName).toList()
+        );
+
+        // Add patient profile if user has PATIENT role
+        if (user.getRoles().stream().anyMatch(r -> Constants.PATIENT_ROLE.equals(r.getRoleName()))) {
+            var patientOpt = patientRepository.findByUserId(user.getId());
+            if (patientOpt.isPresent()) {
+                Patient patient = patientOpt.get();
+                org.springbozo.meditracker.DAO.PatientProfileDto patientDto = new org.springbozo.meditracker.DAO.PatientProfileDto(
+                        patient.getId(),
+                        patient.getName(),
+                        patient.getGender(),
+                        patient.getDateOfBirth(),
+                        patient.getPhone(),
+                        patient.getAddress(),
+                        patient.getBloodType(),
+                        patient.getAllergies(),
+                        patient.getMedicalHistory(),
+                        patient.isActive()
+                );
+                profile.setPatientProfile(patientDto);
+            }
+        }
+
+        // Add doctor profile if user has DOCTOR role
+        if (user.getRoles().stream().anyMatch(r -> Constants.DOCTOR_ROLE.equals(r.getRoleName()))) {
+            var doctorOpt = doctorRepository.findByUserId(user.getId());
+            if (doctorOpt.isPresent()) {
+                org.springbozo.meditracker.model.Doctor doctor = doctorOpt.get();
+                org.springbozo.meditracker.DAO.DoctorProfileDto doctorDto = new org.springbozo.meditracker.DAO.DoctorProfileDto(
+                        doctor.getId(),
+                        doctor.getFirstName(),
+                        doctor.getLastName(),
+                        doctor.getSpecialization(),
+                        doctor.getLicenseNumber(),
+                        doctor.getPhone(),
+                        doctor.getClinicAddress(),
+                        doctor.isActive()
+                );
+                profile.setDoctorProfile(doctorDto);
+            }
+        }
+
+        return profile;
     }
 }
