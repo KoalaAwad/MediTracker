@@ -2,11 +2,11 @@ package org.springbozo.meditracker.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Getter
 @Setter
@@ -14,19 +14,30 @@ import java.util.List;
 public class Medicine {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "medicine_id")
     private int id;
 
+    @Column(name = "medicine_name")
     private String name;
-    private String dosage;
+
+    @Column(name = "generic_name")
+    private String genericName;
+
+    private String manufacturer;
+
+    @Column(name = "dosage_form")
+    private String dosageForm;
+
+    private String strength;
+
+    @Column(columnDefinition = "text")
     private String description;
 
-    @OneToMany(mappedBy = "medicine", cascade = CascadeType.ALL,
-            orphanRemoval = true,targetEntity = Prescription.class, fetch =  FetchType.EAGER)
-    private List<Prescription> prescriptions = new ArrayList<>();
+    @Column(name = "side_effects", columnDefinition = "text")
+    private String sideEffects;
 
-    @ManyToOne
-    @JoinColumn(name = "patient_id")
-    private Patient patient;
+    @Column(columnDefinition = "text")
+    private String contraindications;
 
 }

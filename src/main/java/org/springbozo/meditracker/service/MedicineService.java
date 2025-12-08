@@ -27,4 +27,16 @@ public class MedicineService {
         // Use a fetch join to load schedules eagerly
         return medicineRepository.findAll();
     }
+
+    public Medicine save(Medicine medicine) {
+        return medicineRepository.save(medicine);
+    }
+
+    public boolean deleteMedicine(int id) {
+        if (medicineRepository.existsById(id)) {
+            medicineRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }

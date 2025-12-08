@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "ES2020"],
+    "types": ["vite/client"],
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": ["src"]
+}
+

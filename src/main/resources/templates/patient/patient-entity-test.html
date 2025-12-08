@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Patient Entity Test</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<h1>Patient Test</h1>
+<section>
+    <h2>Patient</h2>
+    <ul>
+        <li>ID: <span th:text="${patient.id}"></span></li>
+        <li>Name: <span th:text="${patient.user != null ? patient.user.name : (patient.firstName)}"></span> <span th:text="${patient.user != null ? '' : patient.lastName}"></span></li>
+        <li>Email: <span th:text="${patient.user != null ? patient.user.email : patient.email}"></span></li>
+        <li>DOB: <span th:text="${patient.dateOfBirth}"></span></li>
+        <li>Gender: <span th:text="${patient.gender}"></span></li>
+        <li>Phone: <span th:text="${patient.phone}"></span></li>
+        <li>Address: <span th:text="${patient.address}"></span></li>
+        <li>Blood Type: <span th:text="${patient.bloodType}"></span></li>
+        <li>Allergies: <span th:text="${patient.allergies}"></span></li>
+        <li>Medical History: <span th:text="${patient.medicalHistory}"></span></li>
+    </ul>
+</section>
+<section>
+    <h2>Doctor(s)</h2>
+    <ul>
+        <li th:each="d : ${patient.doctors}">
+            <span th:text="${d.firstName}"></span> <span th:text="${d.lastName}"></span> - <span th:text="${d.specialization}"></span> (<span th:text="${d.licenseNumber}"></span>)
+            | Phone: <span th:text="${d.phone}"></span> | Clinic: <span th:text="${d.clinicAddress}"></span>
+        </li>
+    </ul>
+</section>
+<section>
+    <h2>Prescription</h2>
+    <ul>
+        <li>Medicine: <span th:text="${prescription.medicine.name}"></span> (<span th:text="${prescription.medicine.genericName}"></span>)</li>
+        <li>Manufacturer: <span th:text="${prescription.medicine.manufacturer}"></span>, Form: <span th:text="${prescription.medicine.dosageForm}"></span>, Strength: <span th:text="${prescription.medicine.strength}"></span></li>
+        <li>Start: <span th:text="${#temporals.format(prescription.startDate, 'yyyy-MM-dd HH:mm')}"></span>, End: <span th:text="${#temporals.format(prescription.endDate, 'yyyy-MM-dd HH:mm')}"></span></li>
+        <li>Route: <span th:text="${prescription.route}"></span></li>
+        <li>Frequency: <span th:text="${prescription.frequencyType}"></span> every <span th:text="${prescription.intervalValue}"></span> hours</li>
+        <li>Time Of Day: <span th:text="${prescription.timeOfDay}"></span></li>
+        <li>Weekly Pattern (JSON): <span th:text="${prescription.dayOfWeekPattern}"></span></li>
+        <li>Days Of Week (collection):
+            <ul>
+                <li th:each="d : ${prescription.daysOfWeek}" th:text="${d}"></li>
+            </ul>
+        </li>
+        <li>Notes: <span th:text="${prescription.notes}"></span></li>
+    </ul>
+    <h3>Dosages</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th><th>Amount</th><th>Time</th><th>Condition</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="d : ${prescription.dosages}">
+            <td th:text="${d.dosageSequence}"></td>
+            <td th:text="${d.dosageAmount}"></td>
+            <td th:text="${d.timeOfDay}"></td>
+            <td th:text="${d.condition}"></td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>
