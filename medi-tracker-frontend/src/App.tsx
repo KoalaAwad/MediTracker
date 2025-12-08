@@ -5,6 +5,8 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/profile/DashboardPage';
 import UsersPage from './pages/admin/UsersPage';
+import MedicineListPage from './pages/medicine/MedicineListPage';
+import MedicineFormPage from './pages/medicine/MedicineFormPage';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
 
@@ -51,6 +53,33 @@ import Unauthorized from './pages/Unauthorized';
                           element={
                             <ProtectedRoute>
                               <UsersPage />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        <Route
+                          path="/medicine"
+                          element={
+                            <ProtectedRoute>
+                              <MedicineListPage />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        <Route
+                          path="/medicine/add"
+                          element={
+                            <ProtectedRoute>
+                              <MedicineFormPage />
+                            </ProtectedRoute>
+                          }
+                        />
+
+                        <Route
+                          path="/medicine/edit/:id"
+                          element={
+                            <ProtectedRoute>
+                              <MedicineFormPage />
                             </ProtectedRoute>
                           }
                         />

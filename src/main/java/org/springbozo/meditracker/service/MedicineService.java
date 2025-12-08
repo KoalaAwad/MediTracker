@@ -31,4 +31,12 @@ public class MedicineService {
     public Medicine save(Medicine medicine) {
         return medicineRepository.save(medicine);
     }
+
+    public boolean deleteMedicine(int id) {
+        if (medicineRepository.existsById(id)) {
+            medicineRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }

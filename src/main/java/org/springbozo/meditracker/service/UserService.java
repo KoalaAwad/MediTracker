@@ -152,4 +152,19 @@ public class UserService {
 
         return true;
     }
+
+    public boolean hasDoctorRole(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+
+        Optional<User> userOpt = findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+
+        User user = userOpt.get();
+        return user.getRoles().stream()
+                .anyMatch(role -> Constants.DOCTOR_ROLE.equals(role.getRoleName()));
+    }
 }
