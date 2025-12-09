@@ -2,7 +2,7 @@
 import { useAuthStore } from "../../zustand/authStore";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
+import { PrimaryButton } from "../../components/ui/StyledButton";
 
 export default function Dashboard() {
     const navigate = useNavigate();
