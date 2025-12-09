@@ -25,7 +25,7 @@
 
     <dependencies>
 
-        <!-- JWT Dependencies for token based auth  test -->
+        <!-- JWT Dependencies for token based auth -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
