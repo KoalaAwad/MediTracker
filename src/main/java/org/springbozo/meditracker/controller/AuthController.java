@@ -169,7 +169,7 @@ public class AuthController {
 
             // Update patient info if user has patient role
             boolean isPatient = user.getRoles().stream().anyMatch(r -> r.getRoleName().equals(org.springbozo.meditracker.constants.Constants.PATIENT_ROLE));
-            if (isPatient && body.containsKey("patient")) {
+            if (isPatient && body.containsKey("x")) {
                 Object patientObj = body.get("patient");
                 if (patientObj instanceof Map) {
                     @SuppressWarnings("unchecked")

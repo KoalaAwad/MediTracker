@@ -1,10 +1,14 @@
-import { useAuth } from "../../context/AuthContext";
+// import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../zustand/authStore";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { user, logout, isLoading } = useAuth();
+    const navigate = useNavigate();
+    const user = useAuthStore(s => s.user);
+    const logout = useAuthStore(s => s.logout);
+    const isLoading = useAuthStore(s => s.isLoading);
+
 
   if (isLoading) {
     return (

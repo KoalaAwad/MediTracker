@@ -1,10 +1,12 @@
 import { Box, CssBaseline } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+// import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../zustand/authStore";
 import LoginForm from "../../components/auth/LoginForm";
 
 export default function Login() {
-  const { login } = useAuth();
+  const login = useAuthStore((s) => s.login);
+  const isLoading = useAuthStore((s) => s.isLoading);
   const navigate = useNavigate();
 
   const handleLogin = async (email: string, password: string) => {

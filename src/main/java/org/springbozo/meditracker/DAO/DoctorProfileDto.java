@@ -10,7 +10,6 @@ public class DoctorProfileDto {
     private String clinicAddress;
     private boolean active;
 
-    // Constructors
     public DoctorProfileDto() {}
 
     public DoctorProfileDto(Integer id, String firstName, String lastName, String specialization,
