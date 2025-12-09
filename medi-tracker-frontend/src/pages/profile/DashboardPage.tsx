@@ -2,6 +2,7 @@
 import { useAuthStore } from "../../zustand/authStore";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@mui/material";
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -47,16 +48,10 @@ export default function Dashboard() {
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-bold text-gray-900">MediTracker</h1>
             <div className="flex gap-2">
-              <button
-                onClick={() => navigate("/profile")}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm"
-              >
+              <button onClick={() => navigate("/profile")} className="nav-btn-primary">
                 My Profile
               </button>
-              <button
-                onClick={logout}
-                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors text-sm"
-              >
+              <button onClick={logout} className="nav-btn-danger">
                 Logout
               </button>
             </div>
@@ -90,25 +85,18 @@ export default function Dashboard() {
             Quick Actions
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button
-              className="dashboard-button"
-              onClick={() => navigate("/medicine")}
-            >
-              + View Medicine
-            </button>
+            <PrimaryButton fullWidth onClick={() => navigate("/medicine")}>
+              View Medicine
+            </PrimaryButton>
             {isPatient && (
-              <>
-                <button className="dashboard-button">+ Add Medicine</button>
-                <button className="dashboard-button">+ View Prescription</button>
-              </>
+              <PrimaryButton fullWidth onClick={() => navigate("/prescriptions")}>
+                View Prescriptions
+              </PrimaryButton>
             )}
             {isAdmin && (
-              <button
-                className="dashboard-button"
-                onClick={() => navigate("/admin/users")}
-              >
-                + View Users
-              </button>
+              <PrimaryButton fullWidth onClick={() => navigate("/admin/users")}>
+                View Users
+              </PrimaryButton>
             )}
           </div>
         </div>
