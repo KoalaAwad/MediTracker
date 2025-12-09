@@ -12,7 +12,6 @@ import {
   TableHead,
   TableRow,
   Button,
-  CircularProgress,
   Alert,
   IconButton,
   Snackbar,
@@ -28,6 +27,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { adminApi, UserDto } from "../../api/adminApi";
 import EditRoleDialog from "./EditRoleDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
+import Loading from "../ui/Loading";
 
 export default function UsersList() {
   const [users, setUsers] = useState<UserDto[]>([]);
@@ -65,7 +65,11 @@ export default function UsersList() {
 
       console.debug("fetchUsers called with", { role, only });
       const response = await adminApi.getAllUsers(token, role, only);
-      console.debug("adminApi.getAllUsers response", { params: response.config.params, url: response.request?.responseURL, count: response.data?.users?.length });
+      console.debug("adminApi.getAllUsers response", {
+        params: response.config.params,
+        url: response.request?.responseURL,
+        count: response.data?.users?.length,
+      });
       setUsers(response.data.users);
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -130,21 +134,6 @@ export default function UsersList() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
@@ -172,7 +161,11 @@ export default function UsersList() {
           </Typography>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setError(null)}
+            >
               {error}
             </Alert>
           )}
@@ -206,19 +199,30 @@ export default function UsersList() {
               }
               label="Only users with this role"
             />
-
           </Box>
 
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell><strong>User ID</strong></TableCell>
-                  <TableCell><strong>Name</strong></TableCell>
-                  <TableCell><strong>Email</strong></TableCell>
-                  <TableCell><strong>Role</strong></TableCell>
-                  <TableCell><strong>Created At</strong></TableCell>
-                  <TableCell align="right"><strong>Actions</strong></TableCell>
+                  <TableCell>
+                    <strong>User ID</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Email</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Role</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Created At</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Actions</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -260,6 +264,8 @@ export default function UsersList() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {loading && <Loading fullScreen={false} label="Loading users..." />}
         </Paper>
       </Container>
 

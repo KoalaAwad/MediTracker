@@ -12,7 +12,6 @@ import {
   TableHead,
   TableRow,
   Button,
-  CircularProgress,
   IconButton,
   Snackbar,
   Alert,
@@ -21,6 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { medicineApi, Medicine } from "../../api/medicineApi";
 import DeleteMedicineDialog from "./DeleteMedicineDialog";
+import Loading from "../ui/Loading";
 
 interface MedicineListProps {
   isAdmin: boolean;
@@ -34,7 +34,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
-  const navigate = useNavigate();``
+  const navigate = useNavigate();
 
   const fetchMedicines = async () => {
     try {
@@ -77,14 +77,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
       setError(err.response?.data?.error || "Failed to delete medicine");
     }
   };
-
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -169,6 +161,10 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               </TableBody>
             </Table>
           </TableContainer>
+
+          {loading && (
+            <Loading fullScreen={false} label="Loading medicines..." />
+          )}
         </Paper>
       </Container>
 
@@ -188,4 +184,3 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     </Box>
   );
 }
-

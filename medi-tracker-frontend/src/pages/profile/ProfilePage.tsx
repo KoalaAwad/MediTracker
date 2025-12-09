@@ -5,7 +5,6 @@ import {
   Container,
   Typography,
   Paper,
-  CircularProgress,
   Alert,
   Button,
   Snackbar,
@@ -13,6 +12,7 @@ import {
 import { profileApi, ProfileDto } from "../../api/profileApi";
 import PatientProfileSection from "../../components/profile/PatientProfileSection";
 import DoctorProfileSection from "../../components/profile/DoctorProfileSection";
+import Loading from "../../components/ui/Loading";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileDto | null>(null);
@@ -84,19 +84,13 @@ export default function ProfilePage() {
     }
   };
 
+  // Helper flags based on roles
+  const hasPatientRole = profile?.roles.includes("PATIENT");
+  const hasDoctorRole = profile?.roles.includes("DOCTOR");
+  const isAdminOnly = profile?.roles.length === 1 && profile.roles.includes("ADMIN");
+
   if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading label="Loading profile..." />;
   }
 
   return (
@@ -152,20 +146,36 @@ export default function ProfilePage() {
               </Box>
             </Paper>
 
-            {/* Patient Profile Section */}
-            {profile.roles.includes("PATIENT") && profile.patientProfile && (
-              <PatientProfileSection
-                profile={profile.patientProfile}
-                onSave={handlePatientSave}
-              />
-            )}
+            {/* Editable Sections: show based on roles only. Admin has no dedicated editable section. */}
+            {!isAdminOnly && (
+              <>
+                {/* Patient Profile Section */}
+                {hasPatientRole && (
+                  <PatientProfileSection
+                    profile={
+                      profile.patientProfile ?? {
+                        id: profile.userId,
+                        name: profile.name,
+                        active: true,
+                      } as any
+                    }
+                    onSave={handlePatientSave}
+                  />
+                )}
 
-            {/* Doctor Profile Section */}
-            {profile.roles.includes("DOCTOR") && profile.doctorProfile && (
-              <DoctorProfileSection
-                profile={profile.doctorProfile}
-                onSave={handleDoctorSave}
-              />
+                {/* Doctor Profile Section */}
+                {hasDoctorRole && (
+                  <DoctorProfileSection
+                    profile={
+                      profile.doctorProfile ?? {
+                        id: profile.userId,
+                        active: true,
+                      } as any
+                    }
+                    onSave={handleDoctorSave}
+                  />
+                )}
+              </>
             )}
           </>
         )}
@@ -180,4 +190,3 @@ export default function ProfilePage() {
     </Box>
   );
 }
-
