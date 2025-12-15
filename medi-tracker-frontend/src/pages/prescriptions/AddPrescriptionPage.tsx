@@ -49,6 +49,7 @@ export default function AddPrescriptionPage() {
 
   const role = useAuthStore((s) => s.user?.role || "");
   const isPatient = role.includes("PATIENT");
+  const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
     if (!isPatient) {
@@ -59,7 +60,6 @@ export default function AddPrescriptionPage() {
   useEffect(() => {
     const fetchMedicine = async () => {
       try {
-        const token = localStorage.getItem("token");
         if (!token) {
           navigate("/login");
           return;
@@ -80,7 +80,7 @@ export default function AddPrescriptionPage() {
     }
 
     fetchMedicine();
-  }, [medicineId, navigate]);
+  }, [medicineId, navigate, token]);
 
   const addScheduleRow = () => {
     setSchedule([...schedule, { dayOfWeek: "MONDAY", timeOfDay: "08:00" }]);
@@ -112,7 +112,6 @@ export default function AddPrescriptionPage() {
 
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;

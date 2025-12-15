@@ -4,17 +4,18 @@ import { prescriptionApi, PrescriptionDto } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
 import { useNavigate } from "react-router-dom";
 import { SecondaryButton } from "../../components/ui/StyledButton";
+import { useAuthStore } from "../../zustand/authStore";
 
 export default function MyPrescriptionsPage() {
   const [items, setItems] = useState<PrescriptionDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
     const run = async () => {
       try {
-        const token = localStorage.getItem("token");
         if (!token) {
           navigate("/login");
           return;
@@ -28,7 +29,7 @@ export default function MyPrescriptionsPage() {
       }
     };
     run();
-  }, [navigate]);
+  }, [navigate, token]);
 
   // Helper function to format schedule in smart way
   const formatSchedule = (schedule: { dayOfWeek: string; timeOfDay: string }[]) => {
@@ -147,4 +148,3 @@ export default function MyPrescriptionsPage() {
     </Box>
   );
 }
-

@@ -13,8 +13,10 @@ import { profileApi, ProfileDto } from "../../api/profileApi";
 import PatientProfileSection from "../../components/profile/PatientProfileSection";
 import DoctorProfileSection from "../../components/profile/DoctorProfileSection";
 import Loading from "../../components/ui/Loading";
+import { useAuthStore } from "../../zustand/authStore";
 
 export default function ProfilePage() {
+  const token = useAuthStore((s) => s.token);
   const [profile, setProfile] = useState<ProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,6 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
         if (!token) {
           navigate("/login");
           return;
@@ -48,11 +49,10 @@ export default function ProfilePage() {
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [token, navigate]);
 
   const handlePatientSave = async (updated: any) => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
 
       await profileApi.updatePatientProfile(token, updated);
@@ -69,7 +69,6 @@ export default function ProfilePage() {
 
   const handleDoctorSave = async (updated: any) => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
 
       await profileApi.updateDoctorProfile(token, updated);

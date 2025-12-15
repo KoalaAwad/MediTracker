@@ -41,12 +41,12 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   );
   const [search, setSearch] = useState<string>("");
   const navigate = useNavigate();
+  const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.user?.role || "");
   const isPatient = role.includes("PATIENT");
 
   const fetchMedicines = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
@@ -63,7 +63,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
 
   useEffect(() => {
     fetchMedicines();
-  }, []);
+  }, [token]);
 
   const handleDeleteClick = (medicine: Medicine) => {
     setSelectedMedicine(medicine);
@@ -74,7 +74,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     if (!selectedMedicine) return;
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
 
       await medicineApi.delete(selectedMedicine.id!, token);
