@@ -1,4 +1,4 @@
-package org.springbozo.meditracker.security;
+package org.springbozo.meditracker.config;
 
 import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;

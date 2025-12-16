@@ -6,7 +6,7 @@ import org.springbozo.meditracker.model.Patient;
 import org.springbozo.meditracker.model.Doctor;
 import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.DoctorRepository;
-import org.springbozo.meditracker.security.JwtUtil;
+import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

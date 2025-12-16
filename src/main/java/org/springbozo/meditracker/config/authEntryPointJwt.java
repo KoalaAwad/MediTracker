@@ -1,4 +1,4 @@
-package org.springbozo.meditracker.security;
+package org.springbozo.meditracker.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

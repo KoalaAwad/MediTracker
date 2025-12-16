@@ -1,7 +1,7 @@
 package org.springbozo.meditracker.controller;
 
 import org.springbozo.meditracker.model.Medicine;
-import org.springbozo.meditracker.security.JwtUtil;
+import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.MedicineService;
 import org.springbozo.meditracker.service.UserService;
 import org.springframework.http.ResponseEntity;

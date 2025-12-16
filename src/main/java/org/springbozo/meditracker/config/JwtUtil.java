@@ -1,4 +1,4 @@
-package org.springbozo.meditracker.security;
+package org.springbozo.meditracker.config;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

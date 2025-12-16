@@ -2,7 +2,7 @@ package org.springbozo.meditracker.controller;
 
 import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;
-import org.springbozo.meditracker.security.JwtUtil;
+import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
 import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.DoctorRepository;

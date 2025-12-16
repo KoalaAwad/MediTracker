@@ -6,14 +6,13 @@ import org.springbozo.meditracker.DAO.DoctorProfileDto;
 import org.springbozo.meditracker.model.User;
 import org.springbozo.meditracker.model.Patient;
 import org.springbozo.meditracker.model.Doctor;
-import org.springbozo.meditracker.security.JwtUtil;
+import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
 import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.DoctorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
