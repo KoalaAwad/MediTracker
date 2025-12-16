@@ -9,21 +9,18 @@ type AuthState = {
   isLoading: boolean;
   error: string | null;
 
-  // Actions (mirror AuthContext)
   init: () => Promise<void>;
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
-  // Initial state
   user: null,
   token: null,
   isAuthenticated: false,
   isLoading: true,
   error: null,
 
-  // Initialize from localStorage and fetch current user
   init: async () => {
     const storedToken = localStorage.getItem('token');
     if (!storedToken) {
