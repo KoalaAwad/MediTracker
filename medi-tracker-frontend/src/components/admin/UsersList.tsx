@@ -28,6 +28,7 @@ import { adminApi, UserDto } from "../../api/adminApi";
 import EditRoleDialog from "./EditRoleDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 import Loading from "../ui/Loading";
+import { useAuthStore } from "../../zustand/authStore";
 
 export default function UsersList() {
   const [users, setUsers] = useState<UserDto[]>([]);
@@ -41,11 +42,10 @@ export default function UsersList() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [onlyRole, setOnlyRole] = useState(false);
   const navigate = useNavigate();
+  const token = useAuthStore((s) => s.token);
 
   const fetchRoles = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
       const res = await adminApi.getAvailableRoles(token);
       setRoles(res.data.roles);
     } catch (err: any) {
@@ -57,7 +57,6 @@ export default function UsersList() {
   const fetchUsers = async (role?: string | null, only?: boolean) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/unauthorized");
         return;
@@ -108,7 +107,6 @@ export default function UsersList() {
 
   const handleEditSave = async (userId: number, roles: string[]) => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
 
       await adminApi.updateUserRoles(token, { userId, roles });
@@ -122,7 +120,6 @@ export default function UsersList() {
 
   const handleDeleteConfirm = async (userId: number) => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
 
       await adminApi.deleteUser(token, userId);

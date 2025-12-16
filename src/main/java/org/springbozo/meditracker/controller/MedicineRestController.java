@@ -157,11 +157,13 @@ public class MedicineRestController {
                 return ResponseEntity.status(404).body(Map.of("error", "Medicine not found"));
             }
 
-            return ResponseEntity.ok(Map.of("message", "Medicine deleted successfully"));
+            // Soft delete - medicine is marked as inactive but prescriptions remain intact
+            return ResponseEntity.ok(Map.of(
+                "message", "Medicine marked as inactive. Existing prescriptions are preserved."
+            ));
 
         } catch (Exception ex) {
             return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 }
-

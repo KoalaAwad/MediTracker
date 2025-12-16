@@ -1,0 +1,159 @@
+# MediTracker Deployment Guide
+
+## Prerequisites on Ubuntu Server
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker
+sudo apt install -y docker.io docker-compose
+
+# Start and enable Docker
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add your user to docker group (logout and login after this)
+sudo usermod -aG docker $USER
+```
+
+## Step 1: Export Database from Windows
+
+On your Windows machine:
+```powershell
+# Export database (from project root)
+# Writes to deploy\db-backup\meditracker-backup-<timestamp>.sql and latest copy
+.\deploy\windows\export-db.bat
+```
+
+## Step 2: Transfer Files to Ubuntu Server
+
+### Option A: Using SCP (from Windows)
+```powershell
+# Replace <username> and <server-ip> with your Ubuntu server details
+scp -r C:\dev\projects\MediTracker <username>@<server-ip>:/home/<username>/
+```
+
+### Option B: Using Git (Recommended)
+```bash
+# On Windows - commit and push to Git
+cd C:\dev\projects\MediTracker
+git add .
+git commit -m "Prepare for deployment"
+git push origin main
+
+# On Ubuntu - clone from Git
+cd ~
+git clone <your-repo-url> MediTracker
+cd MediTracker
+```
+
+### Option C: Using USB/Network Share
+Copy the entire `MediTracker` folder to the Ubuntu server
+
+## Step 3: Deploy on Ubuntu Server
+
+```bash
+# Navigate to deploy directory
+cd ~/MediTracker/deploy
+
+# Make scripts executable
+chmod +x deploy.sh export-db.sh
+
+# Deploy (builds and starts everything)
+./deploy.sh
+```
+
+## Step 4: Verify Deployment
+
+```bash
+# Check running containers
+docker ps
+
+# View logs (from deploy directory)
+docker-compose logs -f
+
+# Check frontend
+curl http://localhost
+
+# Check backend
+curl http://localhost:8080/api/auth/me
+```
+
+## Access Your Application
+
+- **Frontend:** http://<server-ip>
+- **Backend API:** http://<server-ip>:8080
+- **Database:** <server-ip>:5432
+
+## Troubleshooting
+
+### View logs
+```bash
+# From deploy directory
+docker-compose logs -f [service-name]
+# Example: docker-compose logs -f backend
+```
+
+### Restart services
+```bash
+# From deploy directory
+docker-compose restart
+```
+
+### Rebuild specific service
+```bash
+# From deploy directory
+docker-compose up --build -d frontend
+```
+
+### Access database
+```bash
+docker exec -it meditracker-db psql -U myuser -d meditracker
+```
+
+## Managing the Application
+
+### Start services
+```bash
+# From deploy directory
+docker-compose up -d
+```
+
+### Stop services
+```bash
+# From deploy directory
+docker-compose down
+```
+
+### Update application
+```bash
+cd ~/MediTracker
+git pull origin main
+cd deploy
+./deploy.sh
+```
+
+## Port Configuration
+
+If you need to change ports, edit `deploy/docker-compose.yaml`:
+```yaml
+frontend:
+  ports:
+    - "3000:80"  # Change 3000 to your desired port
+
+backend:
+  ports:
+    - "9090:8080"  # Change 9090 to your desired port
+```
+
+## Database Backup/Restore
+
+### Backup
+```bash
+docker exec meditracker-db pg_dump -U myuser -d meditracker > backup-$(date +%Y%m%d).sql
+```
+
+### Restore
+```bash
+cat backup.sql | docker exec -i meditracker-db psql -U myuser -d meditracker
+```

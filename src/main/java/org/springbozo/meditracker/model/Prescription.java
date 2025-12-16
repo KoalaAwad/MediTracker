@@ -1,17 +1,31 @@
 package org.springbozo.meditracker.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springbozo.meditracker.model.embedded.Dosage;
+import org.springbozo.meditracker.model.embedded.ScheduleEntry;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Table(
+        name = "prescription",
+        indexes = {
+                @Index(name = "idx_prescription_patient", columnList = "patient_id"),
+                @Index(name = "idx_prescription_medicine", columnList = "medicine_id")
+        }
+)
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,52 +36,57 @@ public class Prescription {
     @Column(name = "prescription_id")
     private int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medicine_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
 
-    @Column(name = "week_days", length = 100)
-    private String weekDays; // e.g. "Mon,Tue,Thu"
+    // Explicit dosage value object
+    @Embedded
+    @NotNull
+    private Dosage dosage;
 
-    // Times of day when the medicine should be taken
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "prescription_day_time", joinColumns = @JoinColumn(name = "prescription_id"))
-    @Column(name = "time_of_day")
-    private List<LocalTime> dayTimes = new ArrayList<>();
-
-    @Column(name = "dosage_amount")
-    private int dosageAmount;
-
-    @Column(name = "dosage_unit", length = 50)
-    private String dosageUnit;
-
-    @Column(name = "start_date")
-    private LocalDate startDate; // date-only; optional (defaults to today)
+    @Column(name = "start_date", nullable = false)
+    @NotNull
+    private LocalDate startDate; // inclusive
 
     @Column(name = "end_date")
-    private LocalDate endDate; // date-only; optional
+    private LocalDate endDate; // optional, inclusive
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    // IANA zone id (e.g., "Europe/London") used to render LocalTime correctly for the patient
+    @Column(name = "time_zone", length = 64, nullable = false)
+    @Size(max = 64)
+    @NotNull
+    private String timeZone;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    // Replaces weekDays + dayTimes. Each entry is (dayOfWeek, timeOfDay)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "prescription_schedule",
+            joinColumns = @JoinColumn(name = "prescription_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"prescription_id", "day_of_week", "time_of_day"})
+    )
+    private Set<ScheduleEntry> schedule = new HashSet<>();
 
-    // dosages relationship removed intentionally — handled separately in PrescriptionDosage if needed
+    @CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
     @PrePersist
-    protected void onCreate() {
-        var now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-    }
-
     @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    protected void validateDates() {
+        if (startDate == null) {
+            throw new IllegalArgumentException("startDate is required");
+        }
+        if (endDate != null && endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("endDate must be on or after startDate");
+        }
     }
 }

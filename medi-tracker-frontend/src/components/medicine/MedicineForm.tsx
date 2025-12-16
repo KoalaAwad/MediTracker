@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { medicineApi, Medicine } from "../../api/medicineApi";
+import { useAuthStore } from "../../zustand/authStore";
 
 export default function MedicineForm() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ export default function MedicineForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -29,7 +31,6 @@ export default function MedicineForm() {
 
   const loadMedicine = async (medicineId: number) => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
@@ -48,7 +49,6 @@ export default function MedicineForm() {
     setError(null);
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
@@ -208,4 +208,3 @@ export default function MedicineForm() {
     </div>
   );
 }
-

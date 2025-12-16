@@ -1,0 +1,49 @@
+QUICK DEPLOYMENT CHECKLIST
+============================
+
+STEP 1: EXPORT DATABASE (ON WINDOWS)
+-------------------------------------
+Run: export-db.bat
+This creates: db-backup/meditracker-backup.sql
+
+
+STEP 2: TRANSFER TO UBUNTU
+---------------------------
+Option A - SCP:
+  scp -r C:\dev\projects\MediTracker user@server:/home/user/
+
+Option B - Git:
+  git add .
+  git commit -m "Deploy"
+  git push
+  # On Ubuntu: git clone <repo>
+
+
+STEP 3: DEPLOY ON UBUNTU
+-------------------------
+cd ~/MediTracker
+chmod +x deploy.sh
+./deploy.sh
+
+
+STEP 4: ACCESS
+--------------
+Frontend: http://server-ip
+Backend:  http://server-ip:8080
+Database: server-ip:5432
+
+
+COMMANDS
+--------
+View logs:    docker-compose -f docker-compose.prod.yaml logs -f
+Stop:         docker-compose -f docker-compose.prod.yaml down
+Restart:      docker-compose -f docker-compose.prod.yaml restart
+Rebuild:      docker-compose -f docker-compose.prod.yaml up --build -d
+
+
+PORTS
+-----
+80   - Frontend (nginx)
+8080 - Backend (Spring Boot)
+5432 - Database (PostgreSQL)
+
