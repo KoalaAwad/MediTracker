@@ -5,12 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 public class Medicine {
 
     @Id
@@ -39,5 +38,9 @@ public class Medicine {
 
     @Column(columnDefinition = "text")
     private String contraindications;
+
+    // Status flag for soft delete - true = active, false = discontinued/deleted
+    @Column(name = "active", nullable = false)
+    private boolean active = true; // Default to active when creating new medicine
 
 }

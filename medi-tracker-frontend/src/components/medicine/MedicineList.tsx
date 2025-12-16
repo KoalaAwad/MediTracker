@@ -15,12 +15,15 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { medicineApi, Medicine } from "../../api/medicineApi";
 import DeleteMedicineDialog from "./DeleteMedicineDialog";
 import Loading from "../ui/Loading";
+import { useAuthStore } from "../../zustand/authStore";
+import { PrimaryButton } from "../ui/StyledButton";
 
 interface MedicineListProps {
   isAdmin: boolean;
@@ -33,12 +36,17 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
+    null
+  );
+  const [search, setSearch] = useState<string>("");
   const navigate = useNavigate();
+  const token = useAuthStore((s) => s.token);
+  const role = useAuthStore((s) => s.user?.role || "");
+  const isPatient = role.includes("PATIENT");
 
   const fetchMedicines = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
@@ -55,7 +63,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
 
   useEffect(() => {
     fetchMedicines();
-  }, []);
+  }, [token]);
 
   const handleDeleteClick = (medicine: Medicine) => {
     setSelectedMedicine(medicine);
@@ -66,7 +74,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     if (!selectedMedicine) return;
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
 
       await medicineApi.delete(selectedMedicine.id!, token);
@@ -78,17 +85,32 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     }
   };
 
+  const filteredMedicines = medicines.filter((m) =>
+    m.name.toLowerCase().includes(search.trim().toLowerCase())
+  );
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
         <Container maxWidth="lg">
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 2 }}>
-            <Typography variant="h6">MediTracker - Medicine Database</Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              py: 2,
+            }}
+          >
+            <Typography variant="h6">
+              MediTracker - Medicine Database
+            </Typography>
             <Box sx={{ display: "flex", gap: 2 }}>
               {(isAdmin || isDoctor) && (
-                <Button variant="contained" onClick={() => navigate("/medicine/add")}>
+                <PrimaryButton
+                  onClick={() => navigate("/medicine/add")}
+                >
                   Add Medicine
-                </Button>
+                </PrimaryButton>
               )}
               <Button variant="outlined" onClick={() => navigate("/dashboard")}>
                 Back to Dashboard
@@ -104,8 +126,24 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
             Medicine List
           </Typography>
 
+          {/* Search input */}
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <TextField
+              label="Search medicines"
+              placeholder="Type medicine name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              size="small"
+              fullWidth
+            />
+          </Box>
+
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setError(null)}
+            >
               {error}
             </Alert>
           )}
@@ -114,47 +152,82 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell><strong>Name</strong></TableCell>
-                  <TableCell><strong>Generic Name</strong></TableCell>
-                  <TableCell><strong>Manufacturer</strong></TableCell>
-                  <TableCell><strong>Dosage Form</strong></TableCell>
-                  <TableCell><strong>Strength</strong></TableCell>
-                  {isAdmin && <TableCell align="right"><strong>Actions</strong></TableCell>}
+                  <TableCell>
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Generic Name</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Manufacturer</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Dosage Form</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Strength</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Actions</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {medicines.length === 0 ? (
+                {filteredMedicines.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isAdmin ? 6 : 5} align="center">
+                    <TableCell colSpan={6} align="center">
                       No medicines found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  medicines.map((medicine) => (
+                  filteredMedicines.map((medicine) => (
                     <TableRow key={medicine.id}>
                       <TableCell>{medicine.name}</TableCell>
                       <TableCell>{medicine.genericName || "N/A"}</TableCell>
                       <TableCell>{medicine.manufacturer || "N/A"}</TableCell>
                       <TableCell>{medicine.dosageForm || "N/A"}</TableCell>
                       <TableCell>{medicine.strength || "N/A"}</TableCell>
-                      {isAdmin && (
-                        <TableCell align="right">
-                          <IconButton
-                            color="primary"
-                            onClick={() => navigate(`/medicine/edit/${medicine.id}`)}
-                            title="Edit medicine"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDeleteClick(medicine)}
-                            title="Delete medicine"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      )}
+                      <TableCell align="right">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          {isAdmin && (
+                            <IconButton
+                              color="primary"
+                              onClick={() =>
+                                navigate(`/medicine/edit/${medicine.id}`)
+                              }
+                              title="Edit medicine"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          )}
+                          {isAdmin && (
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteClick(medicine)}
+                              title="Delete medicine"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                          {/* Add prescription visible only to patients */}
+                          {isPatient && (
+                            <PrimaryButton
+                              size="small"
+                              onClick={() =>
+                                navigate(`/prescriptions/add/${medicine.id}`)
+                              }
+                            >
+                              + Add prescription
+                            </PrimaryButton>
+                          )}
+                        </Box>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

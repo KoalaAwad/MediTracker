@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16.10-alpine3.22
+    container_name: meditracker-db
+    environment:
+      POSTGRES_DB: meditracker
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: meditracker_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-backup:/docker-entrypoint-initdb.d
+    networks:
+      - meditracker-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d meditracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: meditracker-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/meditracker
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: meditracker_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - meditracker-network
+
+  frontend:
+    build:
+      context: ../medi-tracker-frontend
+      dockerfile: Dockerfile
+    container_name: meditracker-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - meditracker-network
+
+volumes:
+  postgres_data:
+
+networks:
+  meditracker-network:
+    driver: bridge
+

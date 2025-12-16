@@ -8,6 +8,7 @@ import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.DoctorRepository;
 import org.springbozo.meditracker.security.JwtUtil;
 import org.springbozo.meditracker.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -86,11 +87,25 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegistrationDto dto) {
+        // Basic validation
+        String rawEmail = dto != null ? dto.getEmail() : null;
+        String email = (rawEmail != null) ? rawEmail.trim().toLowerCase() : null;
+        String password = (dto != null) ? dto.getPassword() : null;
+
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
+        }
+
+        // Duplicate email check with clear message
+        if (userService.emailExists(email)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "This email is already registered"));
+        }
+
         boolean created = userService.register(dto);
         if (!created) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Registration failed or user already exists"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Registration failed"));
         }
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "User registered successfully"));
     }
 
     @PostMapping("/logout")

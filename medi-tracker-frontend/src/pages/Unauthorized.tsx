@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../zustand/authStore';
 
 export default function Unauthorized() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

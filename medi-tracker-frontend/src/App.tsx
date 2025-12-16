@@ -12,6 +12,8 @@ import Unauthorized from './pages/Unauthorized';
 import { useEffect } from 'react';
 import { useAuthStore } from './zustand/authStore';
 import Loading from './components/ui/Loading';
+import AddPrescriptionPage from './pages/prescriptions/AddPrescriptionPage';
+import MyPrescriptionsPage from './pages/prescriptions/MyPrescriptionsPage';
 
             // Protected Route Component
             function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -99,6 +101,24 @@ import Loading from './components/ui/Loading';
                         element={
                           <ProtectedRoute>
                             <MedicineFormPage />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      <Route
+                        path="/prescriptions"
+                        element={
+                          <ProtectedRoute>
+                            <MyPrescriptionsPage />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      <Route
+                        path="/prescriptions/add/:id"
+                        element={
+                          <ProtectedRoute>
+                            <AddPrescriptionPage />
                           </ProtectedRoute>
                         }
                       />
