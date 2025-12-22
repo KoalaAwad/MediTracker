@@ -1,6 +1,6 @@
 import { useAuthStore } from "../../zustand/authStore";
 import { useNavigate } from "react-router-dom";
-import { PrimaryButton } from "../../components/ui/StyledButton";
+import { PrimaryButton, SecondaryButton } from "../../components/ui/StyledButton";
 import Navbar from "../../components/ui/Navbar";
 import { Box, Container, Paper, Typography, Grid, CircularProgress } from "@mui/material";
 

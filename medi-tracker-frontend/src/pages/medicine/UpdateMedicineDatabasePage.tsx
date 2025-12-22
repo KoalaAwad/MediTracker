@@ -16,6 +16,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import { medicineApi } from "../../api/medicineApi";
+import Navbar from "../../components/ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 import { PrimaryButton } from "../../components/ui/StyledButton";
 
@@ -121,34 +122,14 @@ export default function UpdateMedicineDatabasePage() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              py: 2,
-            }}
-          >
-            <Typography variant="h6">
-              MediTracker - Update Medicine Database
-            </Typography>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <Button variant="outlined" onClick={() => navigate("/medicine")}>
-                Back to Medicine List
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar />
 
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper elevation={2} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Update Medicine Database
-          </Typography>
+        <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
+          Update Medicine Database
+        </Typography>
 
+        <Paper elevation={2} sx={{ p: 4 }}>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Upload an OpenFDA Drugs@FDA JSON file to update the medicine
             database. Existing medicines will be preserved (no duplicates).
