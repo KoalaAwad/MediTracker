@@ -33,13 +33,28 @@ const darkTheme: ThemeOptions = {
     secondary: {
       main: '#ce93d8',
     },
+    success: {
+      main: '#66bb6a',
+      light: '#81c784',
+      dark: '#388e3c',
+    },
     background: {
-      default: '#121212',
-      paper: '#1e1e1e',
+      default: '#0a0a0a',
+      paper: '#1a1a1a',
     },
     text: {
       primary: '#ffffff',
       secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+    divider: 'rgba(255, 255, 255, 0.12)',
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
     },
   },
 };
