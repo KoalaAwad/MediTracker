@@ -3,6 +3,7 @@ import { useAuthStore } from "../../zustand/authStore";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../components/ui/StyledButton";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -47,7 +48,8 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-bold text-gray-900">MediTracker</h1>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <ThemeToggle />
               <button onClick={() => navigate("/profile")} className="nav-btn-primary">
                 My Profile
               </button>

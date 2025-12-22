@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -11,6 +12,8 @@ import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
 import { useEffect } from 'react';
 import { useAuthStore } from './zustand/authStore';
+import { useThemeStore } from './zustand/themeStore';
+import { getTheme } from './lib/theme';
 import Loading from './components/ui/Loading';
 import AddPrescriptionPage from './pages/prescriptions/AddPrescriptionPage';
 import MyPrescriptionsPage from './pages/prescriptions/MyPrescriptionsPage';
@@ -35,20 +38,25 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
             function App() {
               const init = useAuthStore((s) => s.init);
               const isLoading = useAuthStore((s) => s.isLoading);
+              const themeMode = useThemeStore((s) => s.mode);
 
               // Initialize auth from localStorage on app mount
               useEffect(() => {
                 init();
               }, [init]);
 
+              const theme = getTheme(themeMode);
+
               return (
-                <BrowserRouter>
-                  {/* AuthProvider removed; Zustand store is global */}
-                  <ErrorBoundary>
-                    {/* Optionally show a top-level loading while init runs */}
-                    {/* {isLoading && <Loading label="Initializing..." />} */}
-                    <Routes>
-                      <Route path="/login" element={<Login />} />
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <BrowserRouter>
+                    {/* AuthProvider removed; Zustand store is global */}
+                    <ErrorBoundary>
+                      {/* Optionally show a top-level loading while init runs */}
+                      {/* {isLoading && <Loading label="Initializing..." />} */}
+                      <Routes>
+                        <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
                       <Route path="/unauthorized" element={<Unauthorized />} />
 
@@ -129,6 +137,7 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
                     </Routes>
                   </ErrorBoundary>
                 </BrowserRouter>
+              </ThemeProvider>
               );
             }
 
