@@ -11,17 +11,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Button,
   IconButton,
   Snackbar,
   Alert,
   TextField,
+  Pagination,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { medicineApi, Medicine } from "../../api/medicineApi";
 import DeleteMedicineDialog from "./DeleteMedicineDialog";
 import Loading from "../ui/Loading";
+import Navbar from "../ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 import { PrimaryButton } from "../ui/StyledButton";
 
@@ -36,24 +36,29 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
-    null
-  );
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
   const [search, setSearch] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const [size, setSize] = useState<number>(20);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const navigate = useNavigate();
   const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.user?.role || "");
   const isPatient = role.includes("PATIENT");
 
-  const fetchMedicines = async () => {
+  const fetchMedicines = async (p = page, s = size, q = search) => {
     try {
       if (!token) {
         navigate("/login");
         return;
       }
 
-      const response = await medicineApi.getAll(token);
-      setMedicines(response.data);
+      setLoading(true);
+      const response = await medicineApi.getPaged(token, p - 1, s, q);
+      setMedicines(response.data.content);
+      setPage(response.data.page + 1);
+      setSize(response.data.size);
+      setTotalPages(response.data.totalPages);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to load medicines");
     } finally {
@@ -62,7 +67,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   };
 
   useEffect(() => {
-    fetchMedicines();
+    fetchMedicines(1, size, "");
   }, [token]);
 
   const handleDeleteClick = (medicine: Medicine) => {
@@ -85,44 +90,36 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     }
   };
 
-  const filteredMedicines = medicines.filter((m) =>
-    m.name.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const handleSearch = () => {
+    fetchMedicines(1, size, search);
+  };
+
+  const handlePageChange = (_: any, value: number) => {
+    fetchMedicines(value, size, search);
+  };
+
+  if (loading) return <Loading />;
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              py: 2,
-            }}
-          >
-            <Typography variant="h6">
-              MediTracker - Medicine Database
-            </Typography>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              {(isAdmin || isDoctor) && (
-                <PrimaryButton
-                  onClick={() => navigate("/medicine/add")}
-                >
-                  Add Medicine
-                </PrimaryButton>
-              )}
-              <Button variant="outlined" onClick={() => navigate("/dashboard")}>
-                Back to Dashboard
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h4" fontWeight="bold">
+            Medicine Database
+          </Typography>
+          {isAdmin && (
+            <PrimaryButton
+              onClick={() => navigate("/medicine/update-database")}
+            >
+              Update Medicine Database
+            </PrimaryButton>
+          )}
+        </Box>
+
         <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h5" gutterBottom>
             Medicine List
           </Typography>
 
@@ -136,6 +133,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               size="small"
               fullWidth
             />
+            <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
           </Box>
 
           {error && (
@@ -153,7 +151,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               <TableHead>
                 <TableRow>
                   <TableCell>
-                    <strong>Name</strong>
+                    <strong>Brand Name</strong>
                   </TableCell>
                   <TableCell>
                     <strong>Generic Name</strong>
@@ -162,10 +160,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
                     <strong>Manufacturer</strong>
                   </TableCell>
                   <TableCell>
-                    <strong>Dosage Form</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Strength</strong>
+                    <strong>Pharm Class</strong>
                   </TableCell>
                   <TableCell align="right">
                     <strong>Actions</strong>
@@ -173,71 +168,68 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredMedicines.length === 0 ? (
+                {medicines.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={5} align="center">
                       No medicines found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredMedicines.map((medicine) => (
-                    <TableRow key={medicine.id}>
-                      <TableCell>{medicine.name}</TableCell>
-                      <TableCell>{medicine.genericName || "N/A"}</TableCell>
-                      <TableCell>{medicine.manufacturer || "N/A"}</TableCell>
-                      <TableCell>{medicine.dosageForm || "N/A"}</TableCell>
-                      <TableCell>{medicine.strength || "N/A"}</TableCell>
-                      <TableCell align="right">
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 1,
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          {isAdmin && (
-                            <IconButton
-                              color="primary"
-                              onClick={() =>
-                                navigate(`/medicine/edit/${medicine.id}`)
-                              }
-                              title="Edit medicine"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          )}
-                          {isAdmin && (
-                            <IconButton
-                              color="error"
-                              onClick={() => handleDeleteClick(medicine)}
-                              title="Delete medicine"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
-                          {/* Add prescription visible only to patients */}
-                          {isPatient && (
-                            <PrimaryButton
-                              size="small"
-                              onClick={() =>
-                                navigate(`/prescriptions/add/${medicine.id}`)
-                              }
-                            >
-                              + Add prescription
-                            </PrimaryButton>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  medicines.map((medicine) => {
+                    const pharmClass = medicine.openfda?.pharm_class_epc?.[0] ||
+                                      medicine.openfda?.pharm_class_moa?.[0] ||
+                                      "N/A";
+
+                    return (
+                      <TableRow key={medicine.id}>
+                        <TableCell>{medicine.name}</TableCell>
+                        <TableCell>{medicine.genericName || "N/A"}</TableCell>
+                        <TableCell>{medicine.manufacturer || "N/A"}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                            {pharmClass}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            {isAdmin && (
+                              <IconButton
+                                color="error"
+                                onClick={() => handleDeleteClick(medicine)}
+                                title="Delete medicine"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                            {isPatient && (
+                              <PrimaryButton
+                                size="small"
+                                onClick={() =>
+                                  navigate(`/prescriptions/add/${medicine.id}`)
+                                }
+                              >
+                                + Add prescription
+                              </PrimaryButton>
+                            )}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </TableContainer>
 
-          {loading && (
-            <Loading fullScreen={false} label="Loading medicines..." />
-          )}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+          </Box>
         </Paper>
       </Container>
 
@@ -257,3 +249,4 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     </Box>
   );
 }
+

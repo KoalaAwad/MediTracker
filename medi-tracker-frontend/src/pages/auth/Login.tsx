@@ -1,7 +1,7 @@
-import { Box, CssBaseline } from "@mui/material";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../../context/AuthContext";
 import { useAuthStore } from "../../zustand/authStore";
+import { getTheme } from "../../lib/theme";
 import LoginForm from "../../components/auth/LoginForm";
 
 export default function Login() {
@@ -14,20 +14,25 @@ export default function Login() {
     navigate("/dashboard");
   };
 
+  // Force light theme for login page
+  const lightTheme = getTheme('light');
+
   return (
-    <Box
-      sx={{
-        width: "100%",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: "background.default",
-        px: 2,
-      }}
-    >
-      <CssBaseline />
-      <LoginForm onSubmit={handleLogin} />
-    </Box>
+    <ThemeProvider theme={lightTheme}>
+      <Box
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+          px: 2,
+        }}
+      >
+        <CssBaseline />
+        <LoginForm onSubmit={handleLogin} />
+      </Box>
+    </ThemeProvider>
   );
 }

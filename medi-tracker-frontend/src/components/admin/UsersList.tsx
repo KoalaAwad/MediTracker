@@ -28,6 +28,7 @@ import { adminApi, UserDto } from "../../api/adminApi";
 import EditRoleDialog from "./EditRoleDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 import Loading from "../ui/Loading";
+import Navbar from "../ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 
 export default function UsersList() {
@@ -133,30 +134,14 @@ export default function UsersList() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              py: 2,
-            }}
-          >
-            <Typography variant="h6">MediTracker - Admin Panel</Typography>
-            <Button variant="outlined" onClick={() => navigate("/dashboard")}>
-              Back to Dashboard
-            </Button>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h4" gutterBottom>
-            User Management
-          </Typography>
+        <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
+          User Management
+        </Typography>
 
+        <Paper elevation={2} sx={{ p: 3 }}>
           {error && (
             <Alert
               severity="error"

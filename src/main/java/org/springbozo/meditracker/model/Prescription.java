@@ -79,6 +79,9 @@ public class Prescription {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "active", nullable = false)
+    private boolean active = true; // Soft delete flag
+
     @PrePersist
     @PreUpdate
     protected void validateDates() {

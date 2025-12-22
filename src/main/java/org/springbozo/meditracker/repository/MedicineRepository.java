@@ -2,6 +2,8 @@ package org.springbozo.meditracker.repository;
 
 
 import org.springbozo.meditracker.model.Medicine;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +19,20 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
 
     // Find by ID only if active
     Optional<Medicine> findByIdAndActiveTrue(int id);
+
+    // Pagination: list only active medicines paged
+    Page<Medicine> findByActiveTrue(Pageable pageable);
+
+    // Simple search by medicine name or generic name (case-insensitive)
+    Page<Medicine> findByActiveTrueAndNameContainingIgnoreCaseOrActiveTrueAndGenericNameContainingIgnoreCase(
+            String nameQuery, Pageable pageable, String genericQuery);
+
+    // Check if medicine exists by name (for deduplication during import)
+    boolean existsByNameIgnoreCase(String name);
+
+    // Check if medicine exists by name AND manufacturer (more precise deduplication)
+    boolean existsByNameIgnoreCaseAndManufacturerIgnoreCase(String name, String manufacturer);
+
+    // Check if medicine exists by name when manufacturer is null
+    boolean existsByNameIgnoreCaseAndManufacturerIsNull(String name);
 }

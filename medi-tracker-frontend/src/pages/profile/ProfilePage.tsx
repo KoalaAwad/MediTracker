@@ -6,13 +6,13 @@ import {
   Typography,
   Paper,
   Alert,
-  Button,
   Snackbar,
 } from "@mui/material";
 import { profileApi, ProfileDto } from "../../api/profileApi";
 import PatientProfileSection from "../../components/profile/PatientProfileSection";
 import DoctorProfileSection from "../../components/profile/DoctorProfileSection";
 import Loading from "../../components/ui/Loading";
+import Navbar from "../../components/ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 
 export default function ProfilePage() {
@@ -94,25 +94,13 @@ export default function ProfilePage() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              py: 2,
-            }}
-          >
-            <Typography variant="h6">MediTracker - My Profile</Typography>
-            <Button variant="outlined" onClick={() => navigate("/dashboard")}>
-              Back to Dashboard
-            </Button>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
+          My Profile
+        </Typography>
+
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}

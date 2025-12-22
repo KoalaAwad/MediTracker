@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16.10-alpine3.22
@@ -30,7 +28,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/meditracker
       SPRING_DATASOURCE_USERNAME: myuser
       SPRING_DATASOURCE_PASSWORD: meditracker_pass
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
     ports:
       - "8080:8080"
     depends_on:
@@ -57,4 +57,3 @@ volumes:
 networks:
   meditracker-network:
     driver: bridge
-

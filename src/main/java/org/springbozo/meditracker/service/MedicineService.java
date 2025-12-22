@@ -2,8 +2,10 @@ package org.springbozo.meditracker.service;
 
 import org.springbozo.meditracker.model.Medicine;
 import org.springbozo.meditracker.repository.MedicineRepository;
-import org.springbozo.meditracker.repository.PrescriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,12 +15,10 @@ import java.util.Optional;
 public class MedicineService {
 
     private final MedicineRepository medicineRepository;
-    private final PrescriptionRepository prescriptionRepository;
 
     @Autowired
-    public MedicineService(MedicineRepository medicineRepository, PrescriptionRepository prescriptionRepository) {
+    public MedicineService(MedicineRepository medicineRepository) {
         this.medicineRepository = medicineRepository;
-        this.prescriptionRepository = prescriptionRepository;
     }
 
     /**
@@ -33,6 +33,19 @@ public class MedicineService {
      */
     public List<Medicine> listMedicines() {
         return medicineRepository.findByActiveTrue();
+    }
+
+    /**
+     * Paginated list, optional search by name or generic name
+     */
+    public Page<Medicine> listMedicinesPaged(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(Math.max(0, page), Math.max(1, size));
+        if (search == null || search.trim().isEmpty()) {
+            return medicineRepository.findByActiveTrue(pageable);
+        }
+        String q = search.trim();
+        // Use repo method to search by name or generic name
+        return medicineRepository.findByActiveTrueAndNameContainingIgnoreCaseOrActiveTrueAndGenericNameContainingIgnoreCase(q, pageable, q);
     }
 
     /**
@@ -71,5 +84,23 @@ public class MedicineService {
      */
     public Optional<Medicine> getMedicineByIdIncludingInactive(int id) {
         return medicineRepository.findById(id);
+    }
+
+    /**
+     * Check if medicine exists by name (case-insensitive) - used for deduplication
+     */
+    public boolean existsByName(String name) {
+        return medicineRepository.existsByNameIgnoreCase(name);
+    }
+
+    /**
+     * Check if medicine exists by name AND manufacturer - more precise deduplication
+     * Allows same drug name with different manufacturers
+     */
+    public boolean existsByNameAndManufacturer(String name, String manufacturer) {
+        if (manufacturer == null || manufacturer.isBlank()) {
+            return medicineRepository.existsByNameIgnoreCaseAndManufacturerIsNull(name);
+        }
+        return medicineRepository.existsByNameIgnoreCaseAndManufacturerIgnoreCase(name, manufacturer);
     }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Container,
@@ -19,14 +19,19 @@ import {
   prescriptionApi,
   PrescriptionRequestDto,
   ScheduleEntryDto,
+  PrescriptionDto,
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
 import { useAuthStore } from "../../zustand/authStore";
 
-export default function AddPrescriptionPage() {
+export default function EditPrescriptionPage() {
   const { id } = useParams();
-  const medicineId = Number(id);
+  const prescriptionId = Number(id);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get prescription from navigation state
+  const prescriptionFromState = location.state?.prescription as PrescriptionDto | undefined;
 
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,15 +41,13 @@ export default function AddPrescriptionPage() {
   const [dosageUnit, setDosageUnit] = useState<string>("TABLET");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [isOngoing, setIsOngoing] = useState<boolean>(false); // Track if prescription is ongoing/indefinite
+  const [isOngoing, setIsOngoing] = useState<boolean>(false);
   const [timeZone, setTimeZone] = useState<string>(
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
   );
   const [schedule, setSchedule] = useState<ScheduleEntryDto[]>([
     { dayOfWeek: "MONDAY", timeOfDay: "08:00" },
   ]);
-
-  // Track which schedule entries are marked as "daily"
   const [dailyFlags, setDailyFlags] = useState<boolean[]>([false]);
 
   const role = useAuthStore((s) => s.user?.role || "");
@@ -58,29 +61,70 @@ export default function AddPrescriptionPage() {
   }, [isPatient, navigate]);
 
   useEffect(() => {
-    const fetchMedicine = async () => {
+    const fetchData = async () => {
       try {
-        if (!token) {
-          navigate("/login");
+        if (!token || !prescriptionFromState) {
+          navigate("/prescriptions");
           return;
         }
-        const res = await medicineApi.getById(medicineId, token);
+
+        // Load the medicine
+        const res = await medicineApi.getById(prescriptionFromState.medicineId, token);
         setMedicine(res.data);
+
+        // Pre-fill form with prescription data
+        setDosageAmount(prescriptionFromState.dosageAmount);
+        setDosageUnit(prescriptionFromState.dosageUnit);
+        setStartDate(prescriptionFromState.startDate);
+        setEndDate(prescriptionFromState.endDate || "");
+        setIsOngoing(!prescriptionFromState.endDate);
+        setTimeZone(prescriptionFromState.timeZone);
+
+        // Set schedule (collapse daily entries)
+        const uniqueSchedule = collapseDailyEntries(prescriptionFromState.schedule);
+        setSchedule(uniqueSchedule.schedule);
+        setDailyFlags(uniqueSchedule.flags);
+
       } catch (err: any) {
-        setError(err.response?.data?.error || "Failed to load medicine");
+        setError(err.response?.data?.error || "Failed to load prescription");
       } finally {
         setLoading(false);
       }
     };
 
-    if (!Number.isFinite(medicineId)) {
-      setError("Invalid medicine ID");
-      setLoading(false);
-      return;
-    }
+    fetchData();
+  }, [prescriptionFromState, navigate, token]);
 
-    fetchMedicine();
-  }, [medicineId, navigate, token]);
+  // Helper to collapse daily entries into single entry with daily flag
+  const collapseDailyEntries = (entries: ScheduleEntryDto[]) => {
+    const byTime = new Map<string, Set<string>>();
+
+    entries.forEach(entry => {
+      if (!byTime.has(entry.timeOfDay)) {
+        byTime.set(entry.timeOfDay, new Set());
+      }
+      byTime.get(entry.timeOfDay)!.add(entry.dayOfWeek);
+    });
+
+    const schedule: ScheduleEntryDto[] = [];
+    const flags: boolean[] = [];
+
+    byTime.forEach((days, time) => {
+      if (days.size === 7) {
+        // All 7 days - mark as daily
+        schedule.push({ dayOfWeek: "MONDAY", timeOfDay: time });
+        flags.push(true);
+      } else {
+        // Individual days
+        days.forEach(day => {
+          schedule.push({ dayOfWeek: day, timeOfDay: time });
+          flags.push(false);
+        });
+      }
+    });
+
+    return { schedule, flags };
+  };
 
   const addScheduleRow = () => {
     setSchedule([...schedule, { dayOfWeek: "MONDAY", timeOfDay: "08:00" }]);
@@ -112,51 +156,49 @@ export default function AddPrescriptionPage() {
 
   const handleSubmit = async () => {
     try {
-      if (!token) {
+      if (!token || !prescriptionFromState) {
         navigate("/login");
         return;
       }
 
-      // Expand daily entries: if a row is marked "daily", create 7 entries (one per day)
+      // Expand daily entries
       const expandedSchedule: ScheduleEntryDto[] = [];
       const allDays = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
       schedule.forEach((entry, index) => {
         if (dailyFlags[index]) {
-          // This entry is "daily" - add it for all 7 days
           allDays.forEach((day) => {
             expandedSchedule.push({ dayOfWeek: day, timeOfDay: entry.timeOfDay });
           });
         } else {
-          // Not daily - add single entry as is
           expandedSchedule.push(entry);
         }
       });
 
       const dto: PrescriptionRequestDto = {
-        medicineId,
+        medicineId: prescriptionFromState.medicineId,
         dosage: { amount: dosageAmount, unit: dosageUnit },
         startDate,
-        endDate: isOngoing ? undefined : (endDate || undefined), // Ongoing = no end date
+        endDate: isOngoing ? undefined : (endDate || undefined),
         timeZone,
         schedule: expandedSchedule,
       };
 
-      await prescriptionApi.createForMe(token, dto);
+      await prescriptionApi.update(token, prescriptionId, dto);
       navigate("/prescriptions");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to create prescription");
+      setError(err.response?.data?.error || "Failed to update prescription");
     }
   };
 
-  if (loading) return <Loading label="Loading medicine..." />;
+  if (loading) return <Loading label="Loading prescription..." />;
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={2} sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
-            Add Prescription
+            Edit Prescription
           </Typography>
 
           {error && (
@@ -240,7 +282,7 @@ export default function AddPrescriptionPage() {
                       onChange={(e) => {
                         setIsOngoing(e.target.checked);
                         if (e.target.checked) {
-                          setEndDate(""); // Clear end date when ongoing is checked
+                          setEndDate("");
                         }
                       }}
                     />
@@ -321,9 +363,9 @@ export default function AddPrescriptionPage() {
 
           <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
             <PrimaryButton onClick={handleSubmit}>
-              Save prescription
+              Update prescription
             </PrimaryButton>
-            <SecondaryButton onClick={() => navigate(-1)}>
+            <SecondaryButton onClick={() => navigate("/prescriptions")}>
               Cancel
             </SecondaryButton>
           </Box>
@@ -332,3 +374,4 @@ export default function AddPrescriptionPage() {
     </Box>
   );
 }
+

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -e
 
 # Change into this script's directory
 cd "$(dirname "$0")"

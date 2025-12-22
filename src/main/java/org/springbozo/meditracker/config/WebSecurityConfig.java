@@ -69,11 +69,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        // Allow auth endpoints to work without CSRF token (login/register)
-                        .ignoringRequestMatchers(new AntPathRequestMatcher("/api/auth/**"))
-                )
+                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF - using stateless JWT auth
                 .cors(c -> {}) // keep CORS configuration active
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(unauthorizedHandler)

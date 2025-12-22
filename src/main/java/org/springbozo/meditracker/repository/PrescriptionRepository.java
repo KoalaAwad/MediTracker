@@ -10,6 +10,12 @@ import java.util.List;
 public interface PrescriptionRepository extends JpaRepository<Prescription, Integer> {
     List<Prescription> findByPatientId(Integer patientId);
 
+    // Find only active prescriptions for a patient
+    List<Prescription> findByPatientIdAndActiveTrue(Integer patientId);
+
+    // Find all prescriptions (including inactive) for a patient
+    List<Prescription> findByPatientIdOrderByCreatedAtDesc(Integer patientId);
+
     // Check if any prescriptions exist for a medicine (using medicine.id)
     boolean existsByMedicine_Id(int medicineId);
 
