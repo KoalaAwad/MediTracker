@@ -70,19 +70,19 @@ export default function Dashboard() {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.light", color: "primary.contrastText" }}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Email</Typography>
                 <Typography variant="body1">{user.email}</Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "success.light", color: "success.contrastText" }}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Role</Typography>
                 <Typography variant="body1">{user.role}</Typography>
               </Paper>
             </Grid>
             <Grid item xs={12} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "secondary.light", color: "secondary.contrastText" }}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>User ID</Typography>
                 <Typography variant="body1">{user.userId}</Typography>
               </Paper>

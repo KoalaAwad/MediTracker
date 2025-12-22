@@ -16,6 +16,7 @@ import { useThemeStore } from './zustand/themeStore';
 import { getTheme } from './lib/theme';
 import Loading from './components/ui/Loading';
 import AddPrescriptionPage from './pages/prescriptions/AddPrescriptionPage';
+import EditPrescriptionPage from './pages/prescriptions/EditPrescriptionPage';
 import MyPrescriptionsPage from './pages/prescriptions/MyPrescriptionsPage';
 import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabasePage';
 
@@ -128,6 +129,15 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
                         element={
                           <ProtectedRoute>
                             <AddPrescriptionPage />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      <Route
+                        path="/prescriptions/edit/:id"
+                        element={
+                          <ProtectedRoute>
+                            <EditPrescriptionPage />
                           </ProtectedRoute>
                         }
                       />
