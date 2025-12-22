@@ -2,7 +2,7 @@ import { Box, Container, Typography, IconButton, Tooltip } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import ThemeToggle from "./ThemeToggle";
-import { PrimaryButton } from "./StyledButton";
+import { PrimaryButton, SecondaryButton } from "./StyledButton";
 import { useAuthStore } from "../../zustand/authStore";
 
 interface NavbarProps {
@@ -53,13 +53,12 @@ export default function Navbar({ showHomeIcon = true }: NavbarProps) {
 
             {isAuthenticated && user ? (
               <>
-                <PrimaryButton
+                <SecondaryButton
                   size="small"
-                  variant="outlined"
                   onClick={() => navigate("/profile")}
                 >
                   My Profile
-                </PrimaryButton>
+                </SecondaryButton>
                 <PrimaryButton
                   size="small"
                   onClick={logout}
@@ -73,13 +72,12 @@ export default function Navbar({ showHomeIcon = true }: NavbarProps) {
               </>
             ) : (
               <>
-                <PrimaryButton
+                <SecondaryButton
                   size="small"
-                  variant="outlined"
                   onClick={() => navigate("/login")}
                 >
                   Login
-                </PrimaryButton>
+                </SecondaryButton>
                 <PrimaryButton
                   size="small"
                   onClick={() => navigate("/register")}

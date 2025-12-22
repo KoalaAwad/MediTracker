@@ -51,22 +51,110 @@ export default function Dashboard() {
           </Typography>
           <Grid container spacing={3} justifyContent="center">
             <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff", textAlign: "center" }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Email</Typography>
-                <Typography variant="body1">{user.email}</Typography>
-              </Paper>
+              <Box
+                sx={{
+                  bgcolor: "background.paper",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: "12px",
+                  p: 3,
+                  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.875rem", fontWeight: 500 }}
+                >
+                  Email
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="text.primary"
+                  sx={{
+                    fontSize: "1.125rem",
+                    fontWeight: 600,
+                    wordBreak: "break-all"
+                  }}
+                >
+                  {user.email}
+                </Typography>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff", textAlign: "center" }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Role</Typography>
-                <Typography variant="body1">{user.role}</Typography>
-              </Paper>
+              <Box
+                sx={{
+                  bgcolor: "background.paper",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: "12px",
+                  p: 3,
+                  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.875rem", fontWeight: 500 }}
+                >
+                  Role
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="text.primary"
+                  sx={{ fontSize: "1.125rem", fontWeight: 600 }}
+                >
+                  {user.role}
+                </Typography>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff", textAlign: "center" }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>User ID</Typography>
-                <Typography variant="body1">{user.userId}</Typography>
-              </Paper>
+              <Box
+                sx={{
+                  bgcolor: "background.paper",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: "12px",
+                  p: 3,
+                  boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.875rem", fontWeight: 500 }}
+                >
+                  User ID
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="text.primary"
+                  sx={{ fontSize: "1.125rem", fontWeight: 600 }}
+                >
+                  {user.userId}
+                </Typography>
+              </Box>
             </Grid>
           </Grid>
         </Paper>

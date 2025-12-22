@@ -1,9 +1,9 @@
 import { Button, ButtonProps } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-// Modern ShadCN-style primary button (theme-aware)
+// Modern ShadCN-style primary button (consistent blue across themes)
 const StyledPrimaryButton = styled(Button)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#1565c0",
+  backgroundColor: "#1565c0", // Same blue in both modes
   color: "#ffffff",
   padding: "10px 20px",
   fontSize: "0.875rem",
@@ -14,7 +14,7 @@ const StyledPrimaryButton = styled(Button)(({ theme }) => ({
   boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
   transition: "all 0.15s ease",
   "&:hover": {
-    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : "#0d47a1",
+    backgroundColor: "#0d47a1", // Same darker blue on hover
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     transform: "translateY(-1px)",
   },
@@ -23,21 +23,21 @@ const StyledPrimaryButton = styled(Button)(({ theme }) => ({
     boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
   },
   "&:disabled": {
-    backgroundColor: theme.palette.mode === 'dark' ? "#42a5f5" : "#90caf9",
+    backgroundColor: "#90caf9",
     color: "#ffffff",
     opacity: 0.5,
   },
   "&:focus-visible": {
-    outline: `2px solid ${theme.palette.primary.main}`,
+    outline: "2px solid #1565c0",
     outlineOffset: "2px",
   },
 }));
 
-// Modern ShadCN-style secondary button (outlined, theme-aware)
+// Modern ShadCN-style secondary button (consistent blue across themes)
 const StyledSecondaryButton = styled(Button)(({ theme }) => ({
   backgroundColor: "transparent",
   borderColor: theme.palette.mode === 'dark' ? "rgba(255, 255, 255, 0.23)" : "rgba(0, 0, 0, 0.23)",
-  color: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#1565c0",
+  color: "#1565c0", // Same blue in both modes
   padding: "10px 20px",
   fontSize: "0.875rem",
   fontWeight: 500,
@@ -48,9 +48,9 @@ const StyledSecondaryButton = styled(Button)(({ theme }) => ({
   boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
   transition: "all 0.15s ease",
   "&:hover": {
-    borderColor: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#0d47a1",
+    borderColor: "#1565c0",
     backgroundColor: theme.palette.mode === 'dark'
-      ? "rgba(144, 202, 249, 0.08)"
+      ? "rgba(21, 101, 192, 0.08)"
       : "rgba(21, 101, 192, 0.04)",
     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
   },
@@ -58,7 +58,7 @@ const StyledSecondaryButton = styled(Button)(({ theme }) => ({
     transform: "translateY(0)",
   },
   "&:focus-visible": {
-    outline: `2px solid ${theme.palette.primary.main}`,
+    outline: "2px solid #1565c0",
     outlineOffset: "2px",
   },
 }));
