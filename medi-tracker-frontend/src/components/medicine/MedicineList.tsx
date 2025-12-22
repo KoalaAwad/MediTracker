@@ -16,6 +16,7 @@ import {
   Snackbar,
   Alert,
   TextField,
+  Pagination,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -40,20 +41,27 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     null
   );
   const [search, setSearch] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const [size, setSize] = useState<number>(20);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const navigate = useNavigate();
   const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.user?.role || "");
   const isPatient = role.includes("PATIENT");
 
-  const fetchMedicines = async () => {
+  const fetchMedicines = async (p = page, s = size, q = search) => {
     try {
       if (!token) {
         navigate("/login");
         return;
       }
 
-      const response = await medicineApi.getAll(token);
-      setMedicines(response.data);
+      setLoading(true);
+      const response = await medicineApi.getPaged(token, p - 1, s, q);
+      setMedicines(response.data.content);
+      setPage(response.data.page + 1);
+      setSize(response.data.size);
+      setTotalPages(response.data.totalPages);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to load medicines");
     } finally {
@@ -62,7 +70,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   };
 
   useEffect(() => {
-    fetchMedicines();
+    fetchMedicines(1, size, "");
   }, [token]);
 
   const handleDeleteClick = (medicine: Medicine) => {
@@ -85,9 +93,14 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     }
   };
 
-  const filteredMedicines = medicines.filter((m) =>
-    m.name.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const handleSearch = () => {
+    // Reset to first page when searching
+    fetchMedicines(1, size, search);
+  };
+
+  const handlePageChange = (_: any, value: number) => {
+    fetchMedicines(value, size, search);
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -136,6 +149,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               size="small"
               fullWidth
             />
+            <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
           </Box>
 
           {error && (
@@ -173,14 +187,14 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredMedicines.length === 0 ? (
+                {medicines.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center">
                       No medicines found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredMedicines.map((medicine) => (
+                  medicines.map((medicine) => (
                     <TableRow key={medicine.id}>
                       <TableCell>{medicine.name}</TableCell>
                       <TableCell>{medicine.genericName || "N/A"}</TableCell>
@@ -234,6 +248,10 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               </TableBody>
             </Table>
           </TableContainer>
+
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+            <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
+          </Box>
 
           {loading && (
             <Loading fullScreen={false} label="Loading medicines..." />

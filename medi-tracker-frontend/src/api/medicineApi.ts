@@ -10,6 +10,15 @@ export interface Medicine {
   description?: string;
   sideEffects?: string;
   contraindications?: string;
+  openfda?: Record<string, string[]>;
+}
+
+export interface PagedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export const medicineApi = {
@@ -17,6 +26,12 @@ export const medicineApi = {
     axiosClient.get<Medicine[]>("/medicine", {
       headers: { Authorization: `Bearer ${token}` }
     }),
+
+  getPaged: (token: string, page = 0, size = 20, q?: string) =>
+    axiosClient.get<PagedResponse<Medicine>>(
+      `/medicine/paged?page=${page}&size=${size}${q ? `&q=${encodeURIComponent(q)}` : ""}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ),
 
   getById: (id: number, token: string) =>
     axiosClient.get<Medicine>(`/medicine/${id}`, {
@@ -38,4 +53,3 @@ export const medicineApi = {
       headers: { Authorization: `Bearer ${token}` }
     })
 };
-

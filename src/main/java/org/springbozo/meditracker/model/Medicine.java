@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 
 @Getter
@@ -39,8 +41,13 @@ public class Medicine {
     @Column(columnDefinition = "text")
     private String contraindications;
 
-    // Status flag for soft delete - true = active, false = discontinued/deleted
     @Column(name = "active", nullable = false)
     private boolean active = true; // Default to active when creating new medicine
+
+    // Preserve OpenFDA fields as JSONB map: key -> array of strings as in OpenFDA
+    // Example: { "generic_name": ["IBUPROFEN"], "brand_name": ["ADVIL"], ... }
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "openfda", columnDefinition = "jsonb")
+    private java.util.Map<String, java.util.List<String>> openfda;
 
 }

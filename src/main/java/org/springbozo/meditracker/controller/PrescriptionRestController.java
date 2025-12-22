@@ -2,7 +2,7 @@ package org.springbozo.meditracker.controller;
 
 import org.springbozo.meditracker.model.Prescription;
 import org.springbozo.meditracker.model.embedded.ScheduleEntry;
-import org.springbozo.meditracker.security.JwtUtil;
+import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.PrescriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -127,4 +127,3 @@ public class PrescriptionRestController {
         return dto;
     }
 }
-
