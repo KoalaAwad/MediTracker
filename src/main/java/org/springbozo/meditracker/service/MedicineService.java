@@ -85,4 +85,11 @@ public class MedicineService {
     public Optional<Medicine> getMedicineByIdIncludingInactive(int id) {
         return medicineRepository.findById(id);
     }
+
+    /**
+     * Check if medicine exists by name (case-insensitive) - used for deduplication
+     */
+    public boolean existsByName(String name) {
+        return medicineRepository.existsByNameIgnoreCase(name);
+    }
 }

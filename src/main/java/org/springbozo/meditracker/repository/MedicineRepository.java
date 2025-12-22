@@ -26,4 +26,7 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
     // Simple search by medicine name or generic name (case-insensitive)
     Page<Medicine> findByActiveTrueAndNameContainingIgnoreCaseOrActiveTrueAndGenericNameContainingIgnoreCase(
             String nameQuery, Pageable pageable, String genericQuery);
+
+    // Check if medicine exists by name (for deduplication during import)
+    boolean existsByNameIgnoreCase(String name);
 }

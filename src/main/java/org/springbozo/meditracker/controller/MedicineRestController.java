@@ -321,6 +321,12 @@ public class MedicineRestController {
                         continue;
                     }
 
+                    // Check if medicine already exists (deduplication by name)
+                    if (medicineService.existsByName(name)) {
+                        skipped++;
+                        continue; // Skip duplicate
+                    }
+
                     Medicine med = new Medicine();
                     med.setName(name);
 
