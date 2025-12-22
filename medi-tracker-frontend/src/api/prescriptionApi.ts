@@ -36,5 +36,15 @@ export const prescriptionApi = {
     axiosClient.get<PrescriptionDto[]>("/prescriptions/me", {
       headers: { Authorization: `Bearer ${token}` },
     }),
+
+  update: (token: string, id: number, dto: PrescriptionRequestDto) =>
+    axiosClient.put(`/prescriptions/${id}`, dto, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+  delete: (token: string, id: number) =>
+    axiosClient.delete(`/prescriptions/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
 };
 

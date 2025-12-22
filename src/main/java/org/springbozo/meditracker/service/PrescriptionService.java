@@ -95,7 +95,73 @@ public class PrescriptionService {
             throw new IllegalStateException("User does not have a patient profile");
         }
 
-        return prescriptionRepository.findByPatientId(patient.getId());
+        return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId());
+    }
+
+    /**
+     * Soft delete a prescription (mark as inactive)
+     */
+    public boolean deletePrescription(String email, int prescriptionId) {
+        User user = userService.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Patient patient = user.getPatient();
+        if (patient == null) {
+            throw new IllegalStateException("User does not have a patient profile");
+        }
+
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+                .orElse(null);
+
+        if (prescription == null || !prescription.getPatient().getId().equals(patient.getId())) {
+            return false; // Not found or not owned by this patient
+        }
+
+        prescription.setActive(false);
+        prescriptionRepository.save(prescription);
+        return true;
+    }
+
+    /**
+     * Update an existing prescription
+     */
+    public Prescription updatePrescription(String email, int prescriptionId, PrescriptionCreateDto dto) {
+        User user = userService.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Patient patient = user.getPatient();
+        if (patient == null) {
+            throw new IllegalStateException("User does not have a patient profile");
+        }
+
+        Prescription prescription = prescriptionRepository.findById(prescriptionId)
+                .orElseThrow(() -> new IllegalArgumentException("Prescription not found"));
+
+        if (!prescription.getPatient().getId().equals(patient.getId())) {
+            throw new IllegalArgumentException("You can only edit your own prescriptions");
+        }
+
+        // Update fields
+        Dosage dosage = new Dosage();
+        dosage.setAmount(dto.getDosage().getAmount());
+        dosage.setUnit(DosageUnit.valueOf(dto.getDosage().getUnit()));
+        prescription.setDosage(dosage);
+
+        prescription.setStartDate(dto.getStartDate());
+        prescription.setEndDate(dto.getEndDate());
+        prescription.setTimeZone(dto.getTimeZone());
+
+        // Update schedule
+        Set<ScheduleEntry> scheduleSet = new HashSet<>();
+        for (ScheduleEntryDto entryDto : dto.getSchedule()) {
+            ScheduleEntry entry = new ScheduleEntry();
+            entry.setDayOfWeek(DayOfWeek.valueOf(entryDto.getDayOfWeek()));
+            entry.setTimeOfDay(LocalTime.parse(entryDto.getTimeOfDay()));
+            scheduleSet.add(entry);
+        }
+        prescription.setSchedule(scheduleSet);
+
+        return prescriptionRepository.save(prescription);
     }
 
     // DTOs for request/response
@@ -189,4 +255,3 @@ public class PrescriptionService {
         public void setSchedule(List<ScheduleEntryDto> schedule) { this.schedule = schedule; }
     }
 }
-

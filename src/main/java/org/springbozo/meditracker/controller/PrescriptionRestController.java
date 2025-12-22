@@ -100,6 +100,76 @@ public class PrescriptionRestController {
     }
 
     /**
+     * PUT /api/prescriptions/{id} - Update an existing prescription
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePrescription(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable int id,
+            @RequestBody PrescriptionService.PrescriptionCreateDto dto) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+
+            String token = authHeader.substring(7);
+            if (!jwtUtil.ValidateJwtToken(token)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+            }
+
+            String email = jwtUtil.getUserFromToken(token);
+
+            Prescription prescription = prescriptionService.updatePrescription(email, id, dto);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Prescription updated successfully",
+                    "prescriptionId", prescription.getId()
+            ));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update prescription: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * DELETE /api/prescriptions/{id} - Soft delete a prescription
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletePrescription(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable int id) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+            }
+
+            String token = authHeader.substring(7);
+            if (!jwtUtil.ValidateJwtToken(token)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+            }
+
+            String email = jwtUtil.getUserFromToken(token);
+
+            boolean deleted = prescriptionService.deletePrescription(email, id);
+
+            if (!deleted) {
+                return ResponseEntity.status(404).body(Map.of("error", "Prescription not found"));
+            }
+
+            return ResponseEntity.ok(Map.of("message", "Prescription deleted successfully"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete prescription: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Helper method to convert Prescription entity to DTO
      */
     private PrescriptionService.PrescriptionResponseDto toPrescriptionResponseDto(Prescription prescription) {

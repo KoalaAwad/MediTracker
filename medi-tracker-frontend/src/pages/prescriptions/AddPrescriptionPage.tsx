@@ -222,33 +222,33 @@ export default function AddPrescriptionPage() {
               />
             </Grid>
             <Grid item xs={6}>
-              <TextField
-                label="End date"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                fullWidth
-                disabled={isOngoing}
-                InputLabelProps={{ shrink: true }}
-                helperText={isOngoing ? "Ongoing - no end date" : ""}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={isOngoing}
-                    onChange={(e) => {
-                      setIsOngoing(e.target.checked);
-                      if (e.target.checked) {
-                        setEndDate(""); // Clear end date when ongoing is checked
-                      }
-                    }}
-                  />
-                }
-                label="Ongoing (indefinite prescription)"
-              />
+              <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+                <TextField
+                  label="End date"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  fullWidth
+                  disabled={isOngoing}
+                  InputLabelProps={{ shrink: true }}
+                  helperText={isOngoing ? "Ongoing - no end date" : ""}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isOngoing}
+                      onChange={(e) => {
+                        setIsOngoing(e.target.checked);
+                        if (e.target.checked) {
+                          setEndDate(""); // Clear end date when ongoing is checked
+                        }
+                      }}
+                    />
+                  }
+                  label="Ongoing"
+                  sx={{ mt: 1, whiteSpace: "nowrap" }}
+                />
+              </Box>
             </Grid>
 
             <Grid item xs={12}>
