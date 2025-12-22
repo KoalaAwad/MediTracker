@@ -205,6 +205,9 @@ public class MedicineRestController {
             @RequestBody java.util.Map<String, Object> payload
     ) {
         try {
+            // ===== SECURITY CHECKS =====
+
+            // 1. Authentication check
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
             }
@@ -219,22 +222,38 @@ public class MedicineRestController {
                 return ResponseEntity.status(403).body(Map.of("error", "Forbidden: Admin access required"));
             }
 
+            // 2. Validate payload structure
+            if (payload == null || payload.isEmpty()) {
+                return ResponseEntity.status(400).body(Map.of("error", "Empty payload"));
+            }
+
+            // 3. Limit maximum number of records (prevent DOS)
+            Object resultsObj = payload.get("results");
+            if (resultsObj == null) {
+                return ResponseEntity.status(400).body(Map.of("error", "Invalid JSON structure: 'results' array required"));
+            }
+
+
             int created = 0;
             int updated = 0;
             int skipped = 0;
-             int skippedNoName = 0;
+            int skippedNoName = 0;
             int skippedError = 0;
 
             // Handle Drugs@FDA format: { "results": [...] }
-            Object resultsObj = payload.get("results");
             java.util.List<java.util.Map<String, Object>> records;
 
             if (resultsObj instanceof java.util.List) {
                 //noinspection unchecked
                 records = (java.util.List<java.util.Map<String, Object>>) resultsObj;
             } else {
-                // Fallback: treat payload as single record or array
-                records = java.util.List.of(payload);
+                return ResponseEntity.status(400).body(Map.of("error", "Invalid 'results' format: must be an array"));
+            }
+
+            // 4. Limit max records to prevent DOS (adjust as needed)
+            final int MAX_RECORDS = 50000;
+            if (records.size() > MAX_RECORDS) {
+                return ResponseEntity.status(400).body(Map.of("error", "Too many records: max " + MAX_RECORDS + " allowed"));
             }
 
             for (var rec : records) {
@@ -321,8 +340,41 @@ public class MedicineRestController {
                         continue;
                     }
 
-                    // Check if medicine already exists (deduplication by name)
-                    if (medicineService.existsByName(name)) {
+                    // 5. SANITIZE INPUT - prevent injection attacks
+                    // Trim and limit length
+                    name = name.trim();
+                    if (name.length() > 500) {
+                        name = name.substring(0, 500); // Truncate overly long names
+                    }
+                    // Remove potentially dangerous characters (keep alphanumeric, spaces, hyphens, parentheses, commas)
+                    name = name.replaceAll("[^a-zA-Z0-9\\s\\-(),./]", "");
+
+                    // Recheck after sanitization
+                    if (name.isBlank()) {
+                        skipped++;
+                        skippedNoName++;
+                        continue;
+                    }
+
+                    // Extract and sanitize manufacturer BEFORE deduplication check
+                    String manufacturer = null;
+                    Object manu = sourceMap.get("manufacturer_name");
+                    if (manu == null) manu = rec.get("sponsor_name");
+                    if (manu instanceof java.util.List && !((java.util.List<?>) manu).isEmpty()) {
+                        manufacturer = ((java.util.List<?>) manu).get(0).toString().trim();
+                        if (manufacturer.length() > 500) manufacturer = manufacturer.substring(0, 500);
+                        manufacturer = manufacturer.replaceAll("[^a-zA-Z0-9\\s\\-(),./&]", "");
+                        if (manufacturer.isBlank()) manufacturer = null;
+                    } else if (manu instanceof String) {
+                        manufacturer = ((String) manu).trim();
+                        if (manufacturer.length() > 500) manufacturer = manufacturer.substring(0, 500);
+                        manufacturer = manufacturer.replaceAll("[^a-zA-Z0-9\\s\\-(),./&]", "");
+                        if (manufacturer.isBlank()) manufacturer = null;
+                    }
+
+                    // Check if medicine already exists (deduplication by name + manufacturer)
+                    // This allows same drug from different manufacturers
+                    if (medicineService.existsByNameAndManufacturer(name, manufacturer)) {
                         skipped++;
                         continue; // Skip duplicate
                     }
@@ -330,17 +382,17 @@ public class MedicineRestController {
                     Medicine med = new Medicine();
                     med.setName(name);
 
-                    if (openfdaMap.containsKey("generic_name") && !openfdaMap.get("generic_name").isEmpty())
-                        med.setGenericName(openfdaMap.get("generic_name").get(0));
-
-                    // Try to get manufacturer from openfda.manufacturer_name or top-level sponsor_name
-                    Object manu = sourceMap.get("manufacturer_name");
-                    if (manu == null) manu = rec.get("sponsor_name");
-                    if (manu instanceof java.util.List && !((java.util.List<?>) manu).isEmpty()) {
-                        med.setManufacturer(((java.util.List<?>) manu).get(0).toString());
-                    } else if (manu instanceof String) {
-                        med.setManufacturer((String) manu);
+                    if (manufacturer != null) {
+                        med.setManufacturer(manufacturer);
                     }
+
+                    if (openfdaMap.containsKey("generic_name") && !openfdaMap.get("generic_name").isEmpty()) {
+                        String genericName = openfdaMap.get("generic_name").get(0).trim();
+                        if (genericName.length() > 500) genericName = genericName.substring(0, 500);
+                        genericName = genericName.replaceAll("[^a-zA-Z0-9\\s\\-(),./]", "");
+                        med.setGenericName(genericName);
+                    }
+
 
                     med.setOpenfda(openfdaMap.isEmpty() ? null : openfdaMap);
 

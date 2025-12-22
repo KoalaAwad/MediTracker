@@ -92,4 +92,15 @@ public class MedicineService {
     public boolean existsByName(String name) {
         return medicineRepository.existsByNameIgnoreCase(name);
     }
+
+    /**
+     * Check if medicine exists by name AND manufacturer - more precise deduplication
+     * Allows same drug name with different manufacturers
+     */
+    public boolean existsByNameAndManufacturer(String name, String manufacturer) {
+        if (manufacturer == null || manufacturer.isBlank()) {
+            return medicineRepository.existsByNameIgnoreCaseAndManufacturerIsNull(name);
+        }
+        return medicineRepository.existsByNameIgnoreCaseAndManufacturerIgnoreCase(name, manufacturer);
+    }
 }

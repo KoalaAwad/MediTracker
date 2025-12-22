@@ -14,6 +14,7 @@ import { useAuthStore } from './zustand/authStore';
 import Loading from './components/ui/Loading';
 import AddPrescriptionPage from './pages/prescriptions/AddPrescriptionPage';
 import MyPrescriptionsPage from './pages/prescriptions/MyPrescriptionsPage';
+import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabasePage';
 
             // Protected Route Component
             function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -101,6 +102,15 @@ import MyPrescriptionsPage from './pages/prescriptions/MyPrescriptionsPage';
                         element={
                           <ProtectedRoute>
                             <MedicineFormPage />
+                          </ProtectedRoute>
+                        }
+                      />
+
+                      <Route
+                        path="/medicine/update-database"
+                        element={
+                          <ProtectedRoute>
+                            <UpdateMedicineDatabasePage />
                           </ProtectedRoute>
                         }
                       />

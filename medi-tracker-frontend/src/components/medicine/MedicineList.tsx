@@ -118,11 +118,11 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               MediTracker - Medicine Database
             </Typography>
             <Box sx={{ display: "flex", gap: 2 }}>
-              {(isAdmin || isDoctor) && (
+              {isAdmin && (
                 <PrimaryButton
-                  onClick={() => navigate("/medicine/add")}
+                  onClick={() => navigate("/medicine/update-database")}
                 >
-                  Add Medicine
+                  Update Medicine Database
                 </PrimaryButton>
               )}
               <Button variant="outlined" onClick={() => navigate("/dashboard")}>

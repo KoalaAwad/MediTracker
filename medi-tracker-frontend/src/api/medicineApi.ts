@@ -51,5 +51,10 @@ export const medicineApi = {
   delete: (id: number, token: string) =>
     axiosClient.delete(`/medicine/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
+    }),
+
+  importMedicines: (jsonData: any, token: string) =>
+    axiosClient.post(`/medicine/import`, jsonData, {
+      headers: { Authorization: `Bearer ${token}` }
     })
 };

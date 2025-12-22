@@ -29,4 +29,10 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
 
     // Check if medicine exists by name (for deduplication during import)
     boolean existsByNameIgnoreCase(String name);
+
+    // Check if medicine exists by name AND manufacturer (more precise deduplication)
+    boolean existsByNameIgnoreCaseAndManufacturerIgnoreCase(String name, String manufacturer);
+
+    // Check if medicine exists by name when manufacturer is null
+    boolean existsByNameIgnoreCaseAndManufacturerIsNull(String name);
 }
