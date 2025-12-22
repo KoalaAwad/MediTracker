@@ -33,10 +33,10 @@ export default function UpdateMedicineDatabasePage() {
       return "File must be a .json file";
     }
 
-    // Check file size (50MB max)
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    // Check file size (150MB max)
+    const maxSize = 150 * 1024 * 1024; // 150MB
     if (file.size > maxSize) {
-      return "File size exceeds 50MB limit";
+      return "File size exceeds 150MB limit";
     }
 
     // Check file size minimum (must be at least 10 bytes)
@@ -161,7 +161,7 @@ export default function UpdateMedicineDatabasePage() {
                 <ListItemText primary="• File format: .json" />
               </ListItem>
               <ListItem>
-                <ListItemText primary="• Maximum size: 50MB" />
+                <ListItemText primary="• Maximum size: 150MB" />
               </ListItem>
               <ListItem>
                 <ListItemText primary="• Must contain 'results' array with drug records" />

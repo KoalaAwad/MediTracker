@@ -5,12 +5,8 @@ export interface Medicine {
   name: string;
   genericName?: string;
   manufacturer?: string;
-  dosageForm?: string;
-  strength?: string;
-  description?: string;
-  sideEffects?: string;
-  contraindications?: string;
-  openfda?: Record<string, string[]>;
+  active?: boolean;
+  openfda?: Record<string, string[]>; // FDA data arrays
 }
 
 export interface PagedResponse<T> {
@@ -38,15 +34,6 @@ export const medicineApi = {
       headers: { Authorization: `Bearer ${token}` }
     }),
 
-  create: (medicine: Medicine, token: string) =>
-    axiosClient.post<Medicine>("/medicine", medicine, {
-      headers: { Authorization: `Bearer ${token}` }
-    }),
-
-  update: (id: number, medicine: Medicine, token: string) =>
-    axiosClient.put<Medicine>(`/medicine/${id}`, medicine, {
-      headers: { Authorization: `Bearer ${token}` }
-    }),
 
   delete: (id: number, token: string) =>
     axiosClient.delete(`/medicine/${id}`, {

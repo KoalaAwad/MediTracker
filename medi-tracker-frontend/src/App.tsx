@@ -6,7 +6,7 @@ import Dashboard from './pages/profile/DashboardPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import UsersPage from './pages/admin/UsersPage';
 import MedicineListPage from './pages/medicine/MedicineListPage';
-import MedicineFormPage from './pages/medicine/MedicineFormPage';
+import MedicineDetailPage from './pages/medicine/MedicineDetailPage';
 import NotFound from './pages/NotFound';
 import Unauthorized from './pages/Unauthorized';
 import { useEffect } from 'react';
@@ -89,19 +89,10 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
                       />
 
                       <Route
-                        path="/medicine/add"
+                        path="/medicine/view/:id"
                         element={
                           <ProtectedRoute>
-                            <MedicineFormPage />
-                          </ProtectedRoute>
-                        }
-                      />
-
-                      <Route
-                        path="/medicine/edit/:id"
-                        element={
-                          <ProtectedRoute>
-                            <MedicineFormPage />
+                            <MedicineDetailPage />
                           </ProtectedRoute>
                         }
                       />

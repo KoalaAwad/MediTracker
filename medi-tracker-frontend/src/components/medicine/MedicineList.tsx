@@ -167,7 +167,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               <TableHead>
                 <TableRow>
                   <TableCell>
-                    <strong>Name</strong>
+                    <strong>Brand Name</strong>
                   </TableCell>
                   <TableCell>
                     <strong>Generic Name</strong>
@@ -176,10 +176,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
                     <strong>Manufacturer</strong>
                   </TableCell>
                   <TableCell>
-                    <strong>Dosage Form</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Strength</strong>
+                    <strong>Pharm Class</strong>
                   </TableCell>
                   <TableCell align="right">
                     <strong>Actions</strong>
@@ -189,61 +186,60 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               <TableBody>
                 {medicines.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={5} align="center">
                       No medicines found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  medicines.map((medicine) => (
-                    <TableRow key={medicine.id}>
-                      <TableCell>{medicine.name}</TableCell>
-                      <TableCell>{medicine.genericName || "N/A"}</TableCell>
-                      <TableCell>{medicine.manufacturer || "N/A"}</TableCell>
-                      <TableCell>{medicine.dosageForm || "N/A"}</TableCell>
-                      <TableCell>{medicine.strength || "N/A"}</TableCell>
-                      <TableCell align="right">
-                        <Box
-                          sx={{
-                            display: "flex",
-                            gap: 1,
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          {isAdmin && (
-                            <IconButton
-                              color="primary"
-                              onClick={() =>
-                                navigate(`/medicine/edit/${medicine.id}`)
-                              }
-                              title="Edit medicine"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          )}
-                          {isAdmin && (
-                            <IconButton
-                              color="error"
-                              onClick={() => handleDeleteClick(medicine)}
-                              title="Delete medicine"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
-                          {/* Add prescription visible only to patients */}
-                          {isPatient && (
-                            <PrimaryButton
-                              size="small"
-                              onClick={() =>
-                                navigate(`/prescriptions/add/${medicine.id}`)
-                              }
-                            >
-                              + Add prescription
-                            </PrimaryButton>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  medicines.map((medicine) => {
+                    // Extract pharm class from openfda
+                    const pharmClass = medicine.openfda?.pharm_class_epc?.[0] ||
+                                      medicine.openfda?.pharm_class_moa?.[0] ||
+                                      "N/A";
+
+                    return (
+                      <TableRow key={medicine.id}>
+                        <TableCell>{medicine.name}</TableCell>
+                        <TableCell>{medicine.genericName || "N/A"}</TableCell>
+                        <TableCell>{medicine.manufacturer || "N/A"}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
+                            {pharmClass}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            {isAdmin && (
+                              <IconButton
+                                color="error"
+                                onClick={() => handleDeleteClick(medicine)}
+                                title="Delete medicine"
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                            {/* Add prescription visible only to patients */}
+                            {isPatient && (
+                              <PrimaryButton
+                                size="small"
+                                onClick={() =>
+                                  navigate(`/prescriptions/add/${medicine.id}`)
+                                }
+                              >
+                                + Add prescription
+                              </PrimaryButton>
+                            )}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
