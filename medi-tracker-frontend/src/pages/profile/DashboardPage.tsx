@@ -1,14 +1,12 @@
 import { useAuthStore } from "../../zustand/authStore";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../components/ui/StyledButton";
-import ThemeToggle from "../../components/ui/ThemeToggle";
-import { Box, Container, Paper, Typography, Grid, Button, CircularProgress } from "@mui/material";
+import Navbar from "../../components/ui/Navbar";
+import { Box, Container, Paper, Typography, Grid, CircularProgress } from "@mui/material";
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const user = useAuthStore(s => s.user);
-    const logout = useAuthStore(s => s.logout);
     const isLoading = useAuthStore(s => s.isLoading);
 
 
@@ -28,9 +26,9 @@ export default function Dashboard() {
       <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default" }}>
         <Box sx={{ textAlign: "center" }}>
           <Typography color="text.secondary" sx={{ mb: 2 }}>You need to log in first</Typography>
-          <Link to="/login" style={{ textDecoration: "none" }}>
-            <Button color="primary">Go to Login</Button>
-          </Link>
+          <PrimaryButton onClick={() => navigate("/login")}>
+            Go to Login
+          </PrimaryButton>
         </Box>
       </Box>
     );
@@ -42,24 +40,7 @@ export default function Dashboard() {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       {/* Navigation Header */}
-      <Box sx={{ bgcolor: "background.paper", borderBottom: 1, borderColor: "divider" }}>
-        <Container maxWidth="xl">
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: 64 }}>
-            <Typography variant="h6" component="h1" color="text.primary" sx={{ fontWeight: 700 }}>
-              MediTracker
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <ThemeToggle />
-              <Button variant="outlined" onClick={() => navigate("/profile")}>
-                My Profile
-              </Button>
-              <Button variant="contained" color="error" onClick={logout}>
-                Logout
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar showHomeIcon={false} />
 
       {/* Main Content */}
       <Container maxWidth="xl" sx={{ py: 4 }}>

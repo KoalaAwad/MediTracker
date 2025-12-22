@@ -11,18 +11,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Button,
   IconButton,
   Snackbar,
   Alert,
   TextField,
   Pagination,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { medicineApi, Medicine } from "../../api/medicineApi";
 import DeleteMedicineDialog from "./DeleteMedicineDialog";
 import Loading from "../ui/Loading";
+import Navbar from "../ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 import { PrimaryButton } from "../ui/StyledButton";
 
@@ -37,9 +36,7 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(
-    null
-  );
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [size, setSize] = useState<number>(20);
@@ -94,7 +91,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   };
 
   const handleSearch = () => {
-    // Reset to first page when searching
     fetchMedicines(1, size, search);
   };
 
@@ -102,40 +98,28 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     fetchMedicines(value, size, search);
   };
 
+  if (loading) return <Loading />;
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <Box sx={{ bgcolor: "white", borderBottom: 1, borderColor: "divider" }}>
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              py: 2,
-            }}
-          >
-            <Typography variant="h6">
-              MediTracker - Medicine Database
-            </Typography>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              {isAdmin && (
-                <PrimaryButton
-                  onClick={() => navigate("/medicine/update-database")}
-                >
-                  Update Medicine Database
-                </PrimaryButton>
-              )}
-              <Button variant="outlined" onClick={() => navigate("/dashboard")}>
-                Back to Dashboard
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
+      <Navbar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h4" fontWeight="bold">
+            Medicine Database
+          </Typography>
+          {isAdmin && (
+            <PrimaryButton
+              onClick={() => navigate("/medicine/update-database")}
+            >
+              Update Medicine Database
+            </PrimaryButton>
+          )}
+        </Box>
+
         <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h5" gutterBottom>
             Medicine List
           </Typography>
 
@@ -192,7 +176,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
                   </TableRow>
                 ) : (
                   medicines.map((medicine) => {
-                    // Extract pharm class from openfda
                     const pharmClass = medicine.openfda?.pharm_class_epc?.[0] ||
                                       medicine.openfda?.pharm_class_moa?.[0] ||
                                       "N/A";
@@ -224,7 +207,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
                                 <DeleteIcon />
                               </IconButton>
                             )}
-                            {/* Add prescription visible only to patients */}
                             {isPatient && (
                               <PrimaryButton
                                 size="small"
@@ -248,10 +230,6 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
           <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
             <Pagination count={totalPages} page={page} onChange={handlePageChange} color="primary" />
           </Box>
-
-          {loading && (
-            <Loading fullScreen={false} label="Loading medicines..." />
-          )}
         </Paper>
       </Container>
 
@@ -271,3 +249,4 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     </Box>
   );
 }
+

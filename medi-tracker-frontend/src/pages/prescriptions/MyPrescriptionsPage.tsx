@@ -21,8 +21,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { prescriptionApi, PrescriptionDto } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
+import Navbar from "../../components/ui/Navbar";
 import { useNavigate } from "react-router-dom";
-import { PrimaryButton, SecondaryButton } from "../../components/ui/StyledButton";
+import { PrimaryButton } from "../../components/ui/StyledButton";
 import { useAuthStore } from "../../zustand/authStore";
 
 export default function MyPrescriptionsPage() {
@@ -204,15 +205,14 @@ export default function MyPrescriptionsPage() {
   if (loading) return <Loading label="Loading prescriptions..." />;
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
-      <Container maxWidth="md">
-        <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <Navbar />
+
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Box sx={{ mb: 3 }}>
           <Typography variant="h4" fontWeight="bold">
             My Prescriptions
           </Typography>
-          <SecondaryButton onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
-          </SecondaryButton>
         </Box>
 
         {error && (

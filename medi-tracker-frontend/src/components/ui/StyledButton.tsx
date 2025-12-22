@@ -1,55 +1,65 @@
 import { Button, ButtonProps } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-// Reusable primary button with darker, more noticeable blue (theme-aware)
+// Modern ShadCN-style primary button (theme-aware)
 const StyledPrimaryButton = styled(Button)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#1565c0",
   color: "#ffffff",
-  padding: "10px 24px",
-  fontSize: "0.95rem",
-  fontWeight: 600,
+  padding: "10px 20px",
+  fontSize: "0.875rem",
+  fontWeight: 500,
   textTransform: "none",
-  borderRadius: "8px",
-  boxShadow: theme.palette.mode === 'dark'
-    ? "0 2px 4px rgba(144, 202, 249, 0.3)"
-    : "0 2px 4px rgba(21, 101, 192, 0.3)",
-  transition: "all 0.2s ease-in-out",
+  borderRadius: "6px",
+  border: "none",
+  boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+  transition: "all 0.15s ease",
   "&:hover": {
     backgroundColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : "#0d47a1",
-    boxShadow: theme.palette.mode === 'dark'
-      ? "0 4px 8px rgba(144, 202, 249, 0.4)"
-      : "0 4px 8px rgba(21, 101, 192, 0.4)",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     transform: "translateY(-1px)",
   },
   "&:active": {
     transform: "translateY(0)",
-    boxShadow: theme.palette.mode === 'dark'
-      ? "0 1px 2px rgba(144, 202, 249, 0.3)"
-      : "0 1px 2px rgba(21, 101, 192, 0.3)",
+    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
   },
   "&:disabled": {
     backgroundColor: theme.palette.mode === 'dark' ? "#42a5f5" : "#90caf9",
     color: "#ffffff",
-    opacity: 0.6,
+    opacity: 0.5,
+  },
+  "&:focus-visible": {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: "2px",
   },
 }));
 
-// Reusable secondary button (outlined style, theme-aware)
+// Modern ShadCN-style secondary button (outlined, theme-aware)
 const StyledSecondaryButton = styled(Button)(({ theme }) => ({
-  borderColor: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#1565c0",
+  backgroundColor: "transparent",
+  borderColor: theme.palette.mode === 'dark' ? "rgba(255, 255, 255, 0.23)" : "rgba(0, 0, 0, 0.23)",
   color: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#1565c0",
-  padding: "10px 24px",
-  fontSize: "0.95rem",
-  fontWeight: 600,
+  padding: "10px 20px",
+  fontSize: "0.875rem",
+  fontWeight: 500,
   textTransform: "none",
-  borderRadius: "8px",
-  borderWidth: "2px",
+  borderRadius: "6px",
+  borderWidth: "1px",
+  borderStyle: "solid",
+  boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+  transition: "all 0.15s ease",
   "&:hover": {
-    borderColor: theme.palette.mode === 'dark' ? theme.palette.primary.dark : "#0d47a1",
+    borderColor: theme.palette.mode === 'dark' ? theme.palette.primary.main : "#0d47a1",
     backgroundColor: theme.palette.mode === 'dark'
       ? "rgba(144, 202, 249, 0.08)"
       : "rgba(21, 101, 192, 0.04)",
-    borderWidth: "2px",
+    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+  },
+  "&:active": {
+    transform: "translateY(0)",
+  },
+  "&:focus-visible": {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: "2px",
   },
 }));
 
