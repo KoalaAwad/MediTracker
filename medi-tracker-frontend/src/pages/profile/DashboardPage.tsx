@@ -68,21 +68,21 @@ export default function Dashboard() {
           <Typography variant="h5" component="h2" gutterBottom color="text.primary" sx={{ fontWeight: 700 }}>
             Welcome back, {user.name}!
           </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff" }}>
+          <Grid container spacing={3} justifyContent="center">
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff", textAlign: "center" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Email</Typography>
                 <Typography variant="body1">{user.email}</Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff" }}>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff", textAlign: "center" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Role</Typography>
                 <Typography variant="body1">{user.role}</Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff" }}>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: "primary.main", color: "#ffffff", textAlign: "center" }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>User ID</Typography>
                 <Typography variant="body1">{user.userId}</Typography>
               </Paper>
@@ -95,21 +95,21 @@ export default function Dashboard() {
           <Typography variant="h6" component="h3" gutterBottom color="text.primary" sx={{ fontWeight: 600 }}>
             Quick Actions
           </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={3} justifyContent="center">
+            <Grid item xs={12} sm={6} md={4}>
               <PrimaryButton fullWidth onClick={() => navigate("/medicine")}>
                 View Medicine
               </PrimaryButton>
             </Grid>
             {isPatient && (
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <PrimaryButton fullWidth onClick={() => navigate("/prescriptions")}>
                   View Prescriptions
                 </PrimaryButton>
               </Grid>
             )}
             {isAdmin && (
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} sm={6} md={4}>
                 <PrimaryButton fullWidth onClick={() => navigate("/admin/users")}>
                   View Users
                 </PrimaryButton>
