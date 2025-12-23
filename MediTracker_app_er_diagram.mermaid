@@ -1,102 +1,137 @@
 erDiagram
-    USER ||--o{ USER_ROLE : has
-    ROLE ||--o{ USER_ROLE : assigned_to
-    USER ||--o| PATIENT : "is a"
-    USER ||--o| DOCTOR : "is a"
-    PATIENT ||--o{ PATIENT_DOCTOR : "sees"
-    DOCTOR ||--o{ PATIENT_DOCTOR : "treats"
+    %% Core User Management
+    USER ||--o{ USER_ROLE : "has"
+    ROLE ||--o{ USER_ROLE : "assigned_to"
+
+    %% User Profile Extensions
+    USER ||--o| PATIENT : "extends_as"
+    USER ||--o| DOCTOR : "extends_as"
+
+    %% Patient-Doctor Relationship
+    PATIENT }o--o{ DOCTOR : "patient_doctor"
+
+    %% Prescription Management
     PATIENT ||--o{ PRESCRIPTION : "receives"
-    DOCTOR ||--o{ PRESCRIPTION : "assigns"
     MEDICINE ||--o{ PRESCRIPTION : "prescribed_in"
-    PRESCRIPTION ||--o{ PRESCRIPTION_DOSAGE : "has"
+    PRESCRIPTION ||--o{ PRESCRIPTION_SCHEDULE : "has_schedule"
 
+    %% ========================================
+    %% USER ENTITY
+    %% ========================================
     USER {
-        int user_id PK
-        string username
-        string email
-        string password_hash
-        datetime created_at
-        datetime updated_at
+        int user_id PK "Auto-increment"
+        string name "User's full name"
+        string username "Optional username"
+        string email "Unique, not null"
+        string password "BCrypt hashed"
+        datetime created_at "Timestamp on creation"
+        datetime updated_at "Updated on change"
     }
 
+    %% ========================================
+    %% ROLE ENTITY
+    %% ========================================
     ROLE {
-        int role_id PK
-        string role_name
-        string description
+        int role_id PK "Auto-increment"
+        string role_name "ADMIN, DOCTOR, PATIENT"
+        text description "Role description"
     }
 
+    %% ========================================
+    %% USER_ROLE JOIN TABLE
+    %% ========================================
     USER_ROLE {
-        int user_role_id PK
-        int user_id FK
-        int role_id FK
-        datetime assigned_at
+        int user_id FK "References users.user_id"
+        int role_id FK "References role.role_id"
     }
 
+    %% ========================================
+    %% PATIENT ENTITY
+    %% ========================================
     PATIENT {
-        int patient_id PK
-        int user_id FK
-        string first_name
-        string last_name
-        date date_of_birth
-        string gender
-        string phone
-        string address
-        text medical_history
+        int patient_id PK "Auto-increment"
+        int user_id FK "References users.user_id (unique)"
+        string name "Patient name"
+        date date_of_birth "Birth date"
+        string gender "Max 20 chars"
+        string phone "Max 30 chars"
+        string address "Max 255 chars"
+        string blood_type "Blood type (optional)"
+        string allergies "Known allergies"
+        text medical_history "Medical history notes"
+        boolean active "Soft delete flag (default true)"
     }
 
+    %% ========================================
+    %% DOCTOR ENTITY
+    %% ========================================
     DOCTOR {
-        int doctor_id PK
-        int user_id FK
-        string first_name
-        string last_name
-        string specialization
-        string license_number
-        string phone
-        string clinic_address
+        int doctor_id PK "Auto-increment"
+        int user_id FK "References users.user_id (unique)"
+        string first_name "Max 120 chars"
+        string last_name "Max 120 chars"
+        string specialization "Max 150 chars"
+        string license_number "Max 100 chars"
+        string phone "Max 30 chars"
+        string clinic_address "Max 255 chars"
+        boolean active "Soft delete flag (default true)"
     }
 
+    %% ========================================
+    %% PATIENT_DOCTOR JOIN TABLE
+    %% ========================================
     PATIENT_DOCTOR {
-        int patient_doctor_id PK
-        int patient_id FK
-        int doctor_id FK
-        date relationship_started
-        boolean is_primary_doctor
-        string notes
+        int patient_id FK "References patient.patient_id"
+        int doctor_id FK "References doctor.doctor_id"
     }
 
+    %% ========================================
+    %% MEDICINE ENTITY
+    %% ========================================
     MEDICINE {
-        int medicine_id PK
-        string medicine_name
-        string generic_name
-        string manufacturer
-        string dosage_form
-        string strength
-        text description
-        text side_effects
-        text contraindications
+        int medicine_id PK "Auto-increment"
+        string medicine_name "Medicine brand name (not null)"
+        string generic_name "Generic drug name"
+        string manufacturer "Manufacturer name"
+        boolean active "Soft delete flag (default true)"
+        jsonb openfda "OpenFDA data (brand_name, generic_name, substance_name, rxcui, pharm_class arrays)"
     }
 
+    %% ========================================
+    %% PRESCRIPTION ENTITY
+    %% ========================================
     PRESCRIPTION {
-        int prescription_id PK
-        int patient_id FK
-        int doctor_id FK
-        int medicine_id FK
-        date start_date
-        date end_date
-        string route
-        string frequency_type
-        int interval_value
-        json day_of_week_pattern
-        text notes
-        datetime created_at
-        datetime updated_at
+        int prescription_id PK "Auto-increment"
+        int patient_id FK "References patient.patient_id (not null)"
+        int medicine_id FK "References medicine.medicine_id (not null)"
+        decimal dosage_amount "Embedded Dosage.amount (precision 10,2)"
+        string dosage_unit "Embedded Dosage.unit (ENUM: TABLET, CAPSULE, ML, MG, etc.)"
+        date start_date "Prescription start date (not null)"
+        date end_date "Optional end date (null = ongoing)"
+        string time_zone "IANA timezone (max 64 chars, not null)"
+        timestamp created_at "Audit timestamp (auto)"
+        timestamp updated_at "Audit timestamp (auto)"
+        boolean active "Soft delete flag (default true)"
     }
 
-    PRESCRIPTION_DOSAGE {
-        int dosage_id PK
-        int prescription_id FK
-        time time_of_day
-        string condition
-        string dosage_amount
-        int dosage_sequence
+    %% ========================================
+    %% PRESCRIPTION_SCHEDULE (@ElementCollection)
+    %% ========================================
+    PRESCRIPTION_SCHEDULE {
+        int prescription_id FK "References prescription.prescription_id"
+        string day_of_week "Embedded ScheduleEntry.dayOfWeek (ENUM: MONDAY-SUNDAY)"
+        time time_of_day "Embedded ScheduleEntry.timeOfDay (LocalTime)"
     }
+
+    %% ========================================
+    %% NOTES:
+    %% - USER_ROLE is a many-to-many join table (no separate ID)
+    %% - PATIENT_DOCTOR is a many-to-many join table (no separate ID)
+    %% - Dosage is an @Embedded object (not a separate table)
+    %% - ScheduleEntry is an @Embedded object stored in PRESCRIPTION_SCHEDULE
+    %% - DosageUnit enum: TABLET, CAPSULE, PUFF, DROP, PATCH, ML, MG, MCG
+    %% - All timestamps use Spring Data JPA auditing (@CreatedDate, @LastModifiedDate)
+    %% - Soft deletes use 'active' boolean flag (Patient, Doctor, Prescription, Medicine)
+    %% - OpenFDA JSONB stores: brand_name[], generic_name[], substance_name[], rxcui[], pharm_class_*[]
+    %% ========================================
+
