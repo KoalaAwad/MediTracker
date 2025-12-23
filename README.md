@@ -1,15 +1,13 @@
-# 🏥 MediTracker
+# MediTracker
+Hi!
 
-A full-stack web application for managing prescriptions and medicine databases. Built as an end-to-end learning project showcasing modern web development practices.
+This is my full-stack web application for managing prescriptions and a medicine database. Built as an end-to-end learning project showcasing modern web development practices.
 
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
-## 📋 About
-
-MediTracker is an **amateur full-stack web development project** designed to explore and implement various modern technologies in a real-world application. The app allows patients to manage their prescriptions, doctors to track patient medications, and administrators to manage the medicine database using OpenFDA data.
+MediTracker is an **amateur full-stack web development project** designed by me as an educational project to learn and implement various web frameworks. This web app allows users to register and track their prescriptions from a list of FDA approved medicine.
 
 **Tech Stack:**
 - **Backend:** Spring Boot + PostgreSQL
@@ -18,12 +16,13 @@ MediTracker is an **amateur full-stack web development project** designed to exp
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
+These are some of the frameworks, libraries, or plugins used in the creation of this web application (that i can remmeber)
 
 ### Backend
 - **[Spring Boot 3.4.2](https://spring.io/projects/spring-boot)** - Java web framework
 - **[Spring Data JPA](https://spring.io/projects/spring-data-jpa)** - Database abstraction layer
-- **[Spring Security](https://spring.io/projects/spring-security)** - Authentication & authorization
+- **[Spring Security](https://spring.io/projects/spring-security)** - Token Based Authentication & authorization
 - **[PostgreSQL 16](https://www.postgresql.org/)** - Relational database
 - **[Flyway](https://flywaydb.org/)** - Database migration tool
 - **[Lombok](https://projectlombok.org/)** - Boilerplate code reduction
@@ -45,30 +44,16 @@ MediTracker is an **amateur full-stack web development project** designed to exp
 - **[Docker](https://www.docker.com/)** - Containerization
 - **[Docker Compose](https://docs.docker.com/compose/)** - Multi-container orchestration
 - **[Nginx](https://nginx.org/)** - Reverse proxy & static file server
+- **[Postman](https://www.postman.com/)** - Testing Controllers and Endpoints
 
 ---
 
-## ✨ Features
-
-- 🔐 **User Authentication** - JWT-based secure login/registration
-- 👤 **Role-Based Access Control** - Patient, Doctor, and Admin roles
-- 💊 **Medicine Database** - Browse and search FDA-approved medicines
-- 📝 **Prescription Management** - Create, edit, and track prescriptions
-- 🗓️ **Smart Scheduling** - Daily/weekly medication schedules with timezone support
-- 📊 **User Profiles** - Patient and doctor profile management
-- 🌓 **Dark Mode** - Theme toggle with persistent preferences
-- 📱 **Responsive Design** - Mobile-friendly UI
-- 🔄 **Real-time Updates** - OpenFDA data import functionality
-
----
-
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
 - **[Docker](https://docs.docker.com/get-docker/)** (version 20.10+)
 - **[Docker Compose](https://docs.docker.com/compose/install/)** (version 2.0+)
-- **Git** (for cloning the repository)
 
 ### Quick Start
 
@@ -84,27 +69,20 @@ MediTracker is an **amateur full-stack web development project** designed to exp
    ./deploy.sh
    ```
 
-   **On Windows:**
-   ```powershell
-   cd deploy
-   ./deploy.sh
-   ```
-
 3. **Access the application**
-   - Frontend: [http://localhost](http://localhost)
+   - Frontend: [http://localhost](http://localhost) (port 80)
    - Backend API: [http://localhost:8080/api](http://localhost:8080/api)
 
 ### What the deployment script does:
 1. Builds the Spring Boot backend (Maven)
 2. Builds the React frontend (npm)
-3. Creates Docker images for frontend, backend, and PostgreSQL
+3. Uses Dockerfiles to create Docker images for frontend, backend, and PostgreSQL
 4. Starts all containers via Docker Compose
-5. Applies database migrations (Flyway)
-6. Seeds initial data (optional)
-
+5. Applies the database migrations in /src/main/resources/db/migration (Flyway)
+   
 ---
 
-## 📦 Manual Installation (Development)
+## Manual Installation (Development)
 
 ### Backend Setup
 
@@ -130,15 +108,17 @@ cd medi-tracker-frontend
 # Install dependencies
 npm install
 
+# optional - eslint for code analysis 
+npm run lint
+
 # Run development server
 npm run dev
 ```
 
-**Frontend runs on:** `http://localhost:5173` (Vite dev server)
+**Frontend runs on:** `http://localhost:####` (Check console for port)
 
 ### Database Setup
 
-**Using Docker (Recommended):**
 ```bash
 docker run -d \
   --name meditracker-db \
@@ -149,14 +129,9 @@ docker run -d \
   postgres:16-alpine
 ```
 
-**Manual PostgreSQL:**
-1. Install PostgreSQL 16
-2. Create database: `CREATE DATABASE meditracker;`
-3. Update `application.properties` with your credentials
-
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 MediTracker/
@@ -191,7 +166,7 @@ MediTracker/
 
 ---
 
-## 🐳 Docker Architecture
+## Docker Architecture
 
 The application consists of 3 containers:
 
@@ -211,7 +186,7 @@ The application consists of 3 containers:
 
 ---
 
-## 🔑 Default Credentials
+## Admin User
 
 After initial setup, you can register a new user or use test accounts (if seeded):
 
@@ -219,13 +194,9 @@ After initial setup, you can register a new user or use test accounts (if seeded
 - Email: `admin@meditracker.com`
 - Password: `password`
 
-**Test Patient:**
-- Email: `patient@test.com`
-- Password: `password`
-
 ---
 
-## 📚 API Documentation
+## APIs
 
 ### Authentication Endpoints
 - `POST /api/auth/register` - Register new user
@@ -256,36 +227,8 @@ After initial setup, you can register a new user or use test accounts (if seeded
 
 ---
 
-## 🧪 Testing
-
-### Backend Tests
-```bash
-mvn test
-```
-
-### Frontend Tests
-```bash
-cd medi-tracker-frontend
-npm test
-```
-
----
-
-## 🛠️ Development
-
-### Backend Hot Reload
-```bash
-mvn spring-boot:run
-```
-
-### Frontend Hot Reload
-```bash
-cd medi-tracker-frontend
-npm run dev
-```
-
 ### Database Migrations
-Create new migration in `src/main/resources/db/migration/`:
+Flyway is in the project dependencies so to migrate data create a flyway migration at `src/main/resources/db/migration/`:
 ```sql
 -- V{version}__{description}.sql
 -- Example: V2025_12_23_001__add_user_preferences.sql
@@ -293,51 +236,45 @@ Create new migration in `src/main/resources/db/migration/`:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-This is a personal learning project, but contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
+This is a personal learning project, however contributions forks, or issues opened for recommendations/ pointers are more than welcome! <3
 ---
 
-## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-## 🙏 Acknowledgments
+## Sources
 
 - **OpenFDA** - For providing the medicine database
-- **Spring Boot** - For the excellent backend framework
-- **React** - For the powerful frontend library
-- **Material-UI** - For beautiful UI components
-- **ShadCN UI** - For design inspiration
+- **[Eazy Bytes, Madan Reddy](www.udemy.com/course/spring-springboot-jpa-hibernate-zero-to-master)** - For the excellent spring core course
+- **[OpenFDA](https://open.fda.gov/apis/drug/event/)** - For providing API documentation and the medicine database
+- **[Scrimba](https://scrimba.com)** - For learning JavaScript, TypeScript, and React
+- **[LeetJourney](https://www.youtube.com/watch?v=5TY9V5xLW8o)** - for implementing Token based authentication
+- **Material-UI and ShadCN UI** - For prebuilt UI components and styling
 
----
 
-## 📧 Contact
 
-**Project Link:** [https://github.com/yourusername/MediTracker](https://github.com/yourusername/MediTracker)
 
----
 
-## 🎯 Future Enhancements
 
-- [ ] Email notifications for prescription reminders
-- [ ] Mobile app (React Native)
-- [ ] Medicine interaction checker
-- [ ] Analytics dashboard
-- [ ] Export prescriptions to PDF
-- [ ] Multi-language support
-- [ ] Integration with pharmacy APIs
 
----
 
-**Built with ❤️ as a learning project**
 
+
+
+
+
+
+
+
+
+
+```
+       z
+    z
+ z
+|\__/,|   (`\
+ |_ _  |.--.) )
+ ( T   )     /
+(((^_(((/(((_/
+
+```
