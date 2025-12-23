@@ -31,6 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+!.vscode/extensions.json
 
 ### Qodo (AI Code Assistant) ###
 .qodo/
@@ -43,6 +44,7 @@ medi-tracker-frontend/dist-ssr/
 node_modules/
 dist/
 dist-ssr/
+.vite/
 *.local
 
 ### Logs ###
@@ -64,24 +66,14 @@ lerna-debug.log*
 ### OS Files ###
 .DS_Store
 Thumbs.db
-
-### Database Backups (if sensitive) ###
-# Uncomment if you don't want to track database backups
-# db-backup/*.sql
-# deploy/db-backup/*.sql
-
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
+### Database Backups (if sensitive) ###
+# Uncomment if you don't want to track database backups
+# db-backup/*.sql
+# deploy/db-backup/*.sql
 
-### Mac OS ###
-.DS_Store
