@@ -17,12 +17,12 @@ MediTracker is an **amateur full-stack web development project** designed by me 
 ---
 
 ## Technologies Used
-These are some of the frameworks, libraries, or plugins used in the creation of this web application (that i can remmeber)
+These are some of the frameworks, libraries, or plugins used in the creation of this web application (that i can remember)
 
 ### Backend
 - **[Spring Boot 3.4.2](https://spring.io/projects/spring-boot)** - Java web framework
 - **[Spring Data JPA](https://spring.io/projects/spring-data-jpa)** - Database abstraction layer
-- **[Spring Security](https://spring.io/projects/spring-security)** - Token Based Authentication & authorization
+- **[Spring Security](https://spring.io/projects/spring-security)** - Token-based authentication & authorization
 - **[PostgreSQL 16](https://www.postgresql.org/)** - Relational database
 - **[Flyway](https://flywaydb.org/)** - Database migration tool
 - **[Lombok](https://projectlombok.org/)** - Boilerplate code reduction
@@ -31,7 +31,7 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
 - **[HikariCP](https://github.com/brettwooldridge/HikariCP)** - JDBC connection pool
 
 ### Frontend
-- **[React 18](https://react.dev/)** - UI library
+- **[React 18](https://react.dev/)** - React library
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
 - **[Vite](https://vitejs.dev/)** - Build tool & dev server
 - **[Material-UI (MUI)](https://mui.com/)** - Component library
@@ -42,8 +42,7 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
 
 ### DevOps & Deployment
 - **[Docker](https://www.docker.com/)** - Containerization
-- **[Docker Compose](https://docs.docker.com/compose/)** - Multi-container orchestration
-- **[Nginx](https://nginx.org/)** - Reverse proxy & static file server
+- **[Nginx](https://nginx.org/)** - Reverse proxy & static file server 
 - **[Postman](https://www.postman.com/)** - Testing Controllers and Endpoints
 
 ---
@@ -76,7 +75,7 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
 ### What the deployment script does:
 1. Builds the Spring Boot backend (Maven)
 2. Builds the React frontend (npm)
-3. Uses Dockerfiles to create Docker images for frontend, backend, and PostgreSQL
+3. Uses Docker files to create Docker images for frontend, backend, and PostgreSQL
 4. Starts all containers via Docker Compose
 5. Applies the database migrations in /src/main/resources/db/migration (Flyway)
    
