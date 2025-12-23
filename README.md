@@ -228,7 +228,7 @@ After initial setup, you can register a new user or use test accounts (if seeded
 ---
 
 ### Database Migrations
-Flyway is in the project dependencies so to migrate data create a flyway migration at `src/main/resources/db/migration/`:
+Flyway is in the project dependencies so to migrate data, create a flyway migration at `src/main/resources/db/migration/`:
 ```sql
 -- V{version}__{description}.sql
 -- Example: V2025_12_23_001__add_user_preferences.sql
@@ -251,20 +251,30 @@ This is a personal learning project, however contributions forks, or issues open
 - **[LeetJourney](https://www.youtube.com/watch?v=5TY9V5xLW8o)** - for implementing Token based authentication
 - **Material-UI and ShadCN UI** - For prebuilt UI components and styling
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
 
 
 
