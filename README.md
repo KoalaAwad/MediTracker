@@ -70,7 +70,11 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
 
 3. **Access the application**
    - Frontend: [http://localhost](http://localhost) (port 80)
+   - Default Creds:
+       * Email: `admin@meditracker.com`
+       * Password: `password`
    - Backend API: [http://localhost:8080/api](http://localhost:8080/api)
+   - Default 
 
 ### What the deployment script does:
 1. Builds the Spring Boot backend (Maven)
@@ -182,16 +186,6 @@ The application consists of 3 containers:
 3. **meditracker-db** (PostgreSQL 16)
    - Port: 5432
    - Persistent volume for data storage
-
----
-
-## Admin User
-
-After initial setup, you can register a new user or use test accounts (if seeded):
-
-**Admin User:**
-- Email: `admin@meditracker.com`
-- Password: `password`
 
 ---
 
