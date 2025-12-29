@@ -150,26 +150,23 @@ export default function MyPrescriptionsPage() {
               ) : (
                 <Chip label="Ongoing" color="success" size="small" />
               )}
-              {!isPast && (
-                <>
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => handleEditClick(prescription)}
-                    title="Edit prescription"
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => handleDeleteClick(prescription)}
-                    title="Delete prescription"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </>
-              )}
+              {/* Edit and Delete buttons available for ALL prescriptions */}
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => handleEditClick(prescription)}
+                title="Edit prescription"
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => handleDeleteClick(prescription)}
+                title="Delete prescription"
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
             </Box>
           </Box>
 

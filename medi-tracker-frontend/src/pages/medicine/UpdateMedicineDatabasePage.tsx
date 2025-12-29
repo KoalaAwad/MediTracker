@@ -133,8 +133,29 @@ export default function UpdateMedicineDatabasePage() {
         <Paper elevation={2} sx={{ p: 4 }}>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Upload an OpenFDA Drugs@FDA JSON file to update the medicine
-            database. Existing medicines will be preserved (no duplicates).
+            database. This will UPSERT medicine data.
           </Typography>
+
+          <Alert severity="info" sx={{ mb: 3 }}>
+            <strong>Data Source:</strong>
+            <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+              Download the <strong>Human Drugs@FDA</strong> dataset from the official FDA data portal:
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              href="https://open.fda.gov/data/downloads/"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ mb: 2 }}
+            >
+              openFDA Data Downloads
+            </Button>
+            <Typography variant="body2" color="text.secondary">
+              This application's schema is designed for the <strong>Human Drugs@FDA</strong> table structure.
+              Download the JSON file and upload it below to update the medicine database.
+            </Typography>
+          </Alert>
 
           <Alert severity="info" sx={{ mb: 3 }}>
             <strong>File Requirements:</strong>
@@ -247,9 +268,8 @@ export default function UpdateMedicineDatabasePage() {
           </PrimaryButton>
 
           <Alert severity="warning" sx={{ mt: 3 }}>
-            <strong>Warning:</strong> This operation will add new medicines to
-            the database. Existing medicines with the same name will be skipped
-            automatically.
+            <strong>Note:</strong> This operation will UPSERT medicines (insert new or update existing).
+            Medicines with the same name will be updated with new data from the uploaded file.
           </Alert>
         </Paper>
       </Container>
