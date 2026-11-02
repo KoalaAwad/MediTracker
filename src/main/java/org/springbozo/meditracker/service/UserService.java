@@ -199,19 +199,45 @@ public class UserService {
         }
     }
 
+    public static final int PASSWORD_MIN_LENGTH = 8;
+    // BCrypt ignores everything past 72 bytes
+    public static final int PASSWORD_MAX_LENGTH = 72;
+
+    /**
+     * Returns an error message, or null if the password is acceptable.
+     */
+    public static String validatePassword(String password) {
+        if (password == null || password.length() < PASSWORD_MIN_LENGTH) {
+            return "Password must be at least " + PASSWORD_MIN_LENGTH + " characters";
+        }
+        if (password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > PASSWORD_MAX_LENGTH) {
+            return "Password must be at most " + PASSWORD_MAX_LENGTH + " characters";
+        }
+        return null;
+    }
+
     @Transactional
-    public boolean register(RegistrationDto dto) {
-        if (dto == null) return false;
+    public void changePassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    /**
+     * Creates an unverified patient account. Returns null if the input is invalid or the email is taken.
+     */
+    @Transactional
+    public User register(RegistrationDto dto) {
+        if (dto == null) return null;
 
         String email = (dto.getEmail() != null) ? dto.getEmail().trim().toLowerCase() : null;
         String password = dto.getPassword();
 
-        if (email == null || email.isBlank() || password == null || password.isBlank()) {
-            return false;
+        if (email == null || email.isBlank() || validatePassword(password) != null) {
+            return null;
         }
 
         if (userRepository.existsByEmail(email)) {
-            return false; // alreay exists
+            return null; // alreay exists
         }
 
         User user = new User();
@@ -241,7 +267,7 @@ public class UserService {
         patient.setActive(true);
         patientRepository.save(patient);
 
-        return true;
+        return saved;
     }
 
     public User save(User user) {

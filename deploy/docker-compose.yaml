@@ -2,18 +2,18 @@ services:
   postgres:
     image: postgres:16.10-alpine3.22
     container_name: meditracker-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: meditracker
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: meditracker_pass
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USER:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in deploy/.env}
+    # no published port: only the backend can reach the database
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - meditracker-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d meditracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-myuser} -d meditracker"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,15 +23,12 @@ services:
       context: ..
       dockerfile: Dockerfile
     container_name: meditracker-backend
+    restart: unless-stopped
+    env_file: .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/meditracker
-      SPRING_DATASOURCE_USERNAME: myuser
-      SPRING_DATASOURCE_PASSWORD: meditracker_pass
-      SPRING_FLYWAY_ENABLED: "true"
+      DB_URL: jdbc:postgresql://postgres:5432/meditracker
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-    ports:
-      - "8080:8080"
+    # no published port: nginx in the frontend container proxies /api
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,10 +40,26 @@ services:
       context: ../medi-tracker-frontend
       dockerfile: Dockerfile
     container_name: meditracker-frontend
+    restart: unless-stopped
     ports:
-      - "80:80"
+      # localhost only; the public gets in through the Cloudflare Tunnel
+      - "127.0.0.1:${FRONTEND_PORT:-8081}:80"
     depends_on:
       - backend
+    networks:
+      - meditracker-network
+
+  # Cloudflare Tunnel connector. Only started with: docker compose --profile tunnel up -d
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: meditracker-tunnel
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on:
+      - frontend
     networks:
       - meditracker-network
 

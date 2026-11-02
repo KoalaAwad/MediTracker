@@ -7,6 +7,9 @@ import org.springbozo.meditracker.model.Doctor;
 import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.DoctorRepository;
 import org.springbozo.meditracker.config.JwtUtil;
+import org.springbozo.meditracker.model.enums.AuthTokenType;
+import org.springbozo.meditracker.service.AuthTokenService;
+import org.springbozo.meditracker.service.MailService;
 import org.springbozo.meditracker.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,9 +36,15 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final AuthTokenService authTokenService;
+    private final MailService mailService;
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
 
 
-    public AuthController(PasswordEncoder passwordEncoder, AuthenticationManager authManager, UserDetailsService userDetailsService, UserService userService, JwtUtil jwtUtil, PatientRepository patientRepository, DoctorRepository doctorRepository) {
+    public AuthController(PasswordEncoder passwordEncoder, AuthenticationManager authManager, UserDetailsService userDetailsService, UserService userService, JwtUtil jwtUtil, PatientRepository patientRepository, DoctorRepository doctorRepository, AuthTokenService authTokenService, MailService mailService) {
+        this.authTokenService = authTokenService;
+        this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
         this.authManager = authManager;
         this.userDetailsService = userDetailsService;
@@ -69,6 +79,14 @@ public class AuthController {
             User user = userService.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
+            // checked after the password so this doesn't reveal which emails have accounts
+            if (!user.isEmailVerified()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                        "error", "Please verify your email before logging in",
+                        "code", "EMAIL_NOT_VERIFIED"
+                ));
+            }
+
             // Extract role names
             String roles = user.getRoles().stream()
                     .map(role -> role.getRoleName())
@@ -95,17 +113,77 @@ public class AuthController {
         if (email == null || email.isBlank() || password == null || password.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email and password are required"));
         }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Enter a valid email address"));
+        }
+        String passwordError = UserService.validatePassword(password);
+        if (passwordError != null) {
+            return ResponseEntity.badRequest().body(Map.of("error", passwordError));
+        }
 
         // Duplicate email check with clear message
         if (userService.emailExists(email)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "This email is already registered"));
         }
 
-        boolean created = userService.register(dto);
-        if (!created) {
+        User created = userService.register(dto);
+        if (created == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Registration failed"));
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "User registered successfully"));
+        mailService.sendVerification(created.getEmail(), created.getName(),
+                authTokenService.create(created, AuthTokenType.VERIFY_EMAIL));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Check your email to verify your account"));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> body) {
+        Optional<User> userOpt = authTokenService.consume(body.get("token"), AuthTokenType.VERIFY_EMAIL);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "This link is invalid or has expired"));
+        }
+        User user = userOpt.get();
+        user.setEmailVerified(true);
+        userService.save(user);
+        return ResponseEntity.ok(Map.of("message", "Email verified. You can now log in."));
+    }
+
+    // Always answers the same way so it can't be used to find out which emails have accounts
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody Map<String, String> body) {
+        userService.findByEmail(body.get("email"))
+                .filter(u -> !u.isEmailVerified())
+                .filter(u -> !authTokenService.recentlySent(u, AuthTokenType.VERIFY_EMAIL))
+                .ifPresent(u -> mailService.sendVerification(u.getEmail(), u.getName(),
+                        authTokenService.create(u, AuthTokenType.VERIFY_EMAIL)));
+        return ResponseEntity.ok(Map.of("message", "If that account needs verifying, we've sent a new link"));
+    }
+
+    // Always answers the same way so it can't be used to find out which emails have accounts
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        userService.findByEmail(body.get("email"))
+                .filter(u -> !authTokenService.recentlySent(u, AuthTokenType.PASSWORD_RESET))
+                .ifPresent(u -> mailService.sendPasswordReset(u.getEmail(), u.getName(),
+                        authTokenService.create(u, AuthTokenType.PASSWORD_RESET)));
+        return ResponseEntity.ok(Map.of("message", "If an account exists for that email, we've sent a reset link"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String password = body.get("password");
+        String passwordError = UserService.validatePassword(password);
+        if (passwordError != null) {
+            return ResponseEntity.badRequest().body(Map.of("error", passwordError));
+        }
+        Optional<User> userOpt = authTokenService.consume(body.get("token"), AuthTokenType.PASSWORD_RESET);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "This link is invalid or has expired"));
+        }
+        User user = userOpt.get();
+        // clicking a link sent to the inbox also proves the email is theirs
+        user.setEmailVerified(true);
+        userService.changePassword(user, password);
+        return ResponseEntity.ok(Map.of("message", "Password updated. You can now log in."));
     }
 
     @PostMapping("/logout")

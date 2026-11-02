@@ -40,7 +40,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Login and fetch current user
   login: async (credentials: LoginRequest) => {
     set({ isLoading: true, error: null });
-    const response = await authApi.login(credentials);
+    let response;
+    try {
+      response = await authApi.login(credentials);
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
     const token = response.data.token;
 
     localStorage.setItem('token', token);

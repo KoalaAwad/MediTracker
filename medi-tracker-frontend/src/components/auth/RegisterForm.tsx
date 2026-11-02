@@ -13,7 +13,7 @@ import {
   } from "@mui/material";
   import { LockOutlined } from "@mui/icons-material";
   import { useState } from "react";
-  import { Link, useNavigate } from "react-router-dom";
+  import { Link } from "react-router-dom";
   import { authApi } from "../../api/authApi";
 
   const Item = styled(Paper)(({ theme }) => ({
@@ -30,22 +30,41 @@ import {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+    const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
     const handleRegister = async (e: React.FormEvent) => {
       e.preventDefault();
       setError("");
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        return;
+      }
       setLoading(true);
 
       try {
         await authApi.register({ name, email, password });
-        navigate('/login');
+        setRegisteredEmail(email.trim().toLowerCase());
       } catch (err: any) {
         setError(err.response?.data?.error || err.message || 'Registration failed');
       } finally {
         setLoading(false);
       }
     };
+
+    if (registeredEmail) {
+      return (
+        <Paper elevation={3} sx={{ width: "100%", maxWidth: 420, p: 4, textAlign: "center" }}>
+          <Typography variant="h5" gutterBottom>Check your inbox</Typography>
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            We sent a verification link to <strong>{registeredEmail}</strong>. Open it to activate
+            your account, then log in. The link expires in 24 hours.
+          </Typography>
+          <Button component={Link} to="/login" variant="contained" fullWidth>
+            Go to login
+          </Button>
+        </Paper>
+      );
+    }
 
     return (
       <Box
@@ -121,6 +140,7 @@ import {
                   label="Password"
                   type="password"
                   id="password"
+                  helperText="At least 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}

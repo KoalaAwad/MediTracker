@@ -3,6 +3,9 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import VerifyEmail from './pages/auth/VerifyEmail';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/profile/DashboardPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import UsersPage from './pages/admin/UsersPage';
@@ -59,6 +62,9 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
                       <Routes>
                         <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
+                      <Route path="/verify-email" element={<VerifyEmail />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/unauthorized" element={<Unauthorized />} />
 
                       <Route

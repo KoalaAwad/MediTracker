@@ -43,6 +43,22 @@ export const authApi = {
       password: data.password
     }),
 
+  verifyEmail: (token: string) =>
+    axiosClient.post<{ message: string }>("/auth/verify-email", { token }),
+
+  resendVerification: (email: string) =>
+    axiosClient.post<{ message: string }>("/auth/resend-verification", {
+      email: email.trim().toLowerCase()
+    }),
+
+  forgotPassword: (email: string) =>
+    axiosClient.post<{ message: string }>("/auth/forgot-password", {
+      email: email.trim().toLowerCase()
+    }),
+
+  resetPassword: (token: string, password: string) =>
+    axiosClient.post<{ message: string }>("/auth/reset-password", { token, password }),
+
   getCurrentUser: (token: string) =>
     axiosClient.get<User>("/auth/me", {
       headers: {
