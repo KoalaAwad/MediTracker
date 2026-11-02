@@ -1,5 +1,6 @@
 package org.springbozo.meditracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.model.Prescription;
 import org.springbozo.meditracker.model.embedded.ScheduleEntry;
 import org.springbozo.meditracker.config.JwtUtil;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/prescriptions")
 @CrossOrigin
@@ -58,8 +60,8 @@ public class PrescriptionRestController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to create prescription: " + e.getMessage()));
+            log.error("Failed to create prescription", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to create prescription"));
         }
     }
 
@@ -94,8 +96,8 @@ public class PrescriptionRestController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch prescriptions: " + e.getMessage()));
+            log.error("Failed to fetch prescriptions", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch prescriptions"));
         }
     }
 
@@ -131,8 +133,8 @@ public class PrescriptionRestController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to update prescription: " + e.getMessage()));
+            log.error("Failed to update prescription", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update prescription"));
         }
     }
 
@@ -164,8 +166,8 @@ public class PrescriptionRestController {
             return ResponseEntity.ok(Map.of("message", "Prescription deleted successfully"));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete prescription: " + e.getMessage()));
+            log.error("Failed to delete prescription", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete prescription"));
         }
     }
 

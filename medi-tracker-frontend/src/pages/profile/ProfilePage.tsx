@@ -11,6 +11,7 @@ import {
 import { profileApi, ProfileDto } from "../../api/profileApi";
 import PatientProfileSection from "../../components/profile/PatientProfileSection";
 import DoctorProfileSection from "../../components/profile/DoctorProfileSection";
+import DeleteAccountSection from "../../components/profile/DeleteAccountSection";
 import Loading from "../../components/ui/Loading";
 import Navbar from "../../components/ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
@@ -164,6 +165,8 @@ export default function ProfilePage() {
                 )}
               </>
             )}
+
+            <DeleteAccountSection />
           </>
         )}
 

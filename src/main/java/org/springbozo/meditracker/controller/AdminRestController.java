@@ -1,5 +1,6 @@
 package org.springbozo.meditracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.model.Role;
 import org.springbozo.meditracker.model.User;
 import org.springbozo.meditracker.config.JwtUtil;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin
@@ -198,8 +200,8 @@ public class AdminRestController {
             return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + ex.getMessage()));
+            log.error("Internal server error", ex);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 }

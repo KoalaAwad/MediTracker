@@ -202,6 +202,11 @@ The application consists of 3 containers:
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login and receive JWT token
 - `GET /api/auth/me` - Get current user info
+- `DELETE /api/auth/me` - Delete your own account (body: `{password}`)
+- `POST /api/auth/verify-email`, `/resend-verification`, `/forgot-password`, `/reset-password` - Email links
+
+Login, register and the email-link endpoints are rate limited per IP (429 when exceeded),
+and an account locks for 15 minutes after 10 failed logins.
 
 ### Medicine Endpoints
 - `GET /api/medicine` - Get all medicines (paginated)

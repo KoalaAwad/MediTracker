@@ -1,5 +1,6 @@
 package org.springbozo.meditracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.DAO.ProfileDto;
 import org.springbozo.meditracker.DAO.PatientProfileDto;
 import org.springbozo.meditracker.DAO.DoctorProfileDto;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin
@@ -62,7 +64,8 @@ public class ProfileRestController {
             return ResponseEntity.ok(profile);
 
         } catch (Exception ex) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + ex.getMessage()));
+            log.error("Internal server error", ex);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 
@@ -113,7 +116,8 @@ public class ProfileRestController {
             return ResponseEntity.ok(Map.of("message", "Patient profile updated successfully"));
 
         } catch (Exception ex) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + ex.getMessage()));
+            log.error("Internal server error", ex);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 
@@ -160,7 +164,8 @@ public class ProfileRestController {
             return ResponseEntity.ok(Map.of("message", "Doctor profile updated successfully"));
 
         } catch (Exception ex) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + ex.getMessage()));
+            log.error("Internal server error", ex);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 }

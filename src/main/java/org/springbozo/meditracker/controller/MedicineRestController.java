@@ -1,5 +1,6 @@
 package org.springbozo.meditracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.model.Medicine;
 import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.MedicineService;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/medicine")
 @CrossOrigin
@@ -355,7 +357,8 @@ public class MedicineRestController {
             ));
 
         } catch (Exception ex) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error: " + ex.getMessage()));
+            log.error("Internal server error", ex);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 }

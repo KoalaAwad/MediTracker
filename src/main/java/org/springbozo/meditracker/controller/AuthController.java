@@ -6,7 +6,9 @@ import org.springbozo.meditracker.model.Patient;
 import org.springbozo.meditracker.model.Doctor;
 import org.springbozo.meditracker.repository.PatientRepository;
 import org.springbozo.meditracker.repository.DoctorRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.config.JwtUtil;
+import org.springbozo.meditracker.config.RateLimiter;
 import org.springbozo.meditracker.model.enums.AuthTokenType;
 import org.springbozo.meditracker.service.AuthTokenService;
 import org.springbozo.meditracker.service.MailService;
@@ -20,10 +22,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin
@@ -39,10 +43,16 @@ public class AuthController {
     private final AuthTokenService authTokenService;
     private final MailService mailService;
 
+    private final RateLimiter rateLimiter;
+
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static final String REGISTERED_MESSAGE = "Check your email to verify your account";
+    private static final int MAX_LOGIN_FAILURES = 10;
+    private static final Duration LOGIN_FAILURE_WINDOW = Duration.ofMinutes(15);
 
 
-    public AuthController(PasswordEncoder passwordEncoder, AuthenticationManager authManager, UserDetailsService userDetailsService, UserService userService, JwtUtil jwtUtil, PatientRepository patientRepository, DoctorRepository doctorRepository, AuthTokenService authTokenService, MailService mailService) {
+    public AuthController(PasswordEncoder passwordEncoder, AuthenticationManager authManager, UserDetailsService userDetailsService, UserService userService, JwtUtil jwtUtil, PatientRepository patientRepository, DoctorRepository doctorRepository, AuthTokenService authTokenService, MailService mailService, RateLimiter rateLimiter) {
+        this.rateLimiter = rateLimiter;
         this.authTokenService = authTokenService;
         this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
@@ -65,10 +75,23 @@ public class AuthController {
 
         String email = rawEmail.trim().toLowerCase();
 
+        // per-account limit on failed logins, on top of the per-IP limit in RateLimitFilter
+        String failuresKey = "login-failures|" + email;
+        if (rateLimiter.isOverLimit(failuresKey, MAX_LOGIN_FAILURES, LOGIN_FAILURE_WINDOW)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("error", "Too many failed attempts. Try again in 15 minutes or reset your password."));
+        }
+
+        Authentication authentication;
         try {
-            Authentication authentication = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, rawPassword)
-            );
+            authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(email, rawPassword));
+        } catch (Exception ex) {
+            rateLimiter.hit(failuresKey, LOGIN_FAILURE_WINDOW);
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
+        }
+        rateLimiter.clear(failuresKey);
+
+        try {
 
             String username = authentication.getName();
             if (username == null || username.isBlank()) {
@@ -99,7 +122,8 @@ public class AuthController {
                     "role", roles
             ));
         } catch (Exception ex) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
+            log.error("Login failed after authentication for {}", email, ex);
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 
@@ -121,9 +145,15 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", passwordError));
         }
 
-        // Duplicate email check with clear message
-        if (userService.emailExists(email)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "This email is already registered"));
+        // A taken email gets the same answer as a new one, so register can't be used to find out
+        // which emails have accounts. If that account was never verified, it gets a fresh link.
+        Optional<User> existing = userService.findByEmail(email);
+        if (existing.isPresent()) {
+            existing.filter(u -> !u.isEmailVerified())
+                    .filter(u -> !authTokenService.recentlySent(u, AuthTokenType.VERIFY_EMAIL))
+                    .ifPresent(u -> mailService.sendVerification(u.getEmail(), u.getName(),
+                            authTokenService.create(u, AuthTokenType.VERIFY_EMAIL)));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", REGISTERED_MESSAGE));
         }
 
         User created = userService.register(dto);
@@ -132,7 +162,7 @@ public class AuthController {
         }
         mailService.sendVerification(created.getEmail(), created.getName(),
                 authTokenService.create(created, AuthTokenType.VERIFY_EMAIL));
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Check your email to verify your account"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", REGISTERED_MESSAGE));
     }
 
     @PostMapping("/verify-email")
@@ -310,5 +340,36 @@ public class AuthController {
             ex.printStackTrace();
             return ResponseEntity.status(400).body(Map.of("error", "Failed to update profile"));
         }
+    }
+
+    // Deletes the logged-in user's account and everything linked to it (patient, prescriptions, tokens)
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteCurrentUser(@RequestHeader("Authorization") String authHeader,
+                                               @RequestBody Map<String, String> body) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(Map.of("error", "Missing or invalid Authorization header"));
+        }
+        String token = authHeader.substring(7);
+        if (!jwtUtil.ValidateJwtToken(token)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired token"));
+        }
+        Optional<User> userOpt = userService.findByEmail(jwtUtil.getUserFromToken(token));
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid token payload"));
+        }
+        User user = userOpt.get();
+
+        String password = body.get("password");
+        if (password == null || !passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Incorrect password"));
+        }
+        if (userService.hasAdminRole(user.getEmail())
+                && userService.getUsersByRole(org.springbozo.meditracker.constants.Constants.ADMIN_ROLE).size() <= 1) {
+            return ResponseEntity.status(409).body(Map.of("error", "You are the only admin. Make someone else an admin first."));
+        }
+        if (!userService.deleteUser(user.getId())) {
+            return ResponseEntity.status(500).body(Map.of("error", "Could not delete account"));
+        }
+        return ResponseEntity.ok(Map.of("message", "Account deleted"));
     }
 }

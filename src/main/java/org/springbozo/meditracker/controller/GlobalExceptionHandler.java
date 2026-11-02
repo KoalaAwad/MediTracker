@@ -1,57 +1,53 @@
 package org.springbozo.meditracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.nio.file.AccessDeniedException;
+import java.util.Map;
 
-@ControllerAdvice
+/**
+ * Turns uncaught exceptions into JSON with a generic message. Details go to the log only,
+ * so stack traces, SQL and class names never reach the client.
+ */
+@Slf4j
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private ModelAndView buildErrorView(HttpStatus status, String message) {
-        ModelAndView mav = new ModelAndView("error");
-        mav.addObject("status", status.value());
-        mav.addObject("errorMessage", message);
-        return mav;
-    }
-
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public ModelAndView handleNotFound(NoHandlerFoundException ex) {
-        return buildErrorView(HttpStatus.NOT_FOUND, "The requested page was not found.");
-    }
-
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ModelAndView handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
-        return buildErrorView(HttpStatus.METHOD_NOT_ALLOWED, "HTTP method not allowed for this endpoint.");
-    }
-
-    @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentNotValidException.class, IllegalArgumentException.class})
-    public ModelAndView handleBadRequest(Exception ex) {
-        return buildErrorView(HttpStatus.BAD_REQUEST, ex.getMessage() != null ? ex.getMessage() : "Bad request");
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
-    public ModelAndView handleAccessDenied(AccessDeniedException ex) {
-        return buildErrorView(HttpStatus.FORBIDDEN, "You do not have permission to access this resource.");
+    public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
+        return error(HttpStatus.FORBIDDEN);
+    }
+
+    // unreadable JSON body, or a path/query value of the wrong type
+    @ExceptionHandler({HttpMessageNotReadableException.class, TypeMismatchException.class})
+    public ResponseEntity<Map<String, String>> handleBadInput(Exception ex) {
+        log.debug("Bad request input: {}", ex.toString());
+        return error(HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
-    public ModelAndView handleAllExceptions(Exception exception) {
-        String errorMsg = null;
-        if (exception.getMessage() != null) {
-            errorMsg = exception.getMessage();
-        } else if (exception.getCause() != null) {
-            errorMsg = exception.getCause().toString();
-        } else {
-            errorMsg = exception.toString();
+    public ResponseEntity<Map<String, String>> handleAll(Exception ex) {
+        // Spring's own request errors (bad JSON, missing header, wrong method...) carry their status
+        if (ex instanceof ErrorResponse er && er.getStatusCode().value() < 500) {
+            log.debug("Request error: {}", ex.toString());
+            return error(er.getStatusCode());
         }
-        return buildErrorView(HttpStatus.INTERNAL_SERVER_ERROR, errorMsg);
+        log.error("Unhandled exception", ex);
+        return error(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    static ResponseEntity<Map<String, String>> error(HttpStatusCode status) {
+        HttpStatus known = HttpStatus.resolve(status.value());
+        String message = status.value() >= 500 ? "Internal server error"
+                : known != null ? known.getReasonPhrase() : "Request failed";
+        return ResponseEntity.status(status).body(Map.of("error", message));
     }
 }
-
