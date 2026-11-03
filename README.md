@@ -76,6 +76,7 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
    ./deploy.sh                    # local
    ./deploy.sh --profile tunnel   # also start the Cloudflare Tunnel (needs TUNNEL_TOKEN)
    ```
+   For a real server (firewall, tunnel, nightly backups, restore) see [deploy/SERVER.md](deploy/SERVER.md).
 
 4. **Access the application**
    - Site: [http://127.0.0.1:8081](http://127.0.0.1:8081) (only reachable from the machine itself)

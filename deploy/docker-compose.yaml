@@ -1,8 +1,18 @@
+# keep container logs from filling the disk
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+name: meditracker
+
 services:
   postgres:
     image: postgres:16.10-alpine3.22
     container_name: meditracker-db
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_DB: meditracker
       POSTGRES_USER: ${DB_USER:-myuser}
@@ -24,6 +34,7 @@ services:
       dockerfile: Dockerfile
     container_name: meditracker-backend
     restart: unless-stopped
+    logging: *logging
     env_file: .env
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/meditracker
@@ -41,6 +52,7 @@ services:
       dockerfile: Dockerfile
     container_name: meditracker-frontend
     restart: unless-stopped
+    logging: *logging
     ports:
       # localhost only; the public gets in through the Cloudflare Tunnel
       - "127.0.0.1:${FRONTEND_PORT:-8081}:80"
@@ -54,6 +66,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: meditracker-tunnel
     restart: unless-stopped
+    logging: *logging
     profiles: ["tunnel"]
     command: tunnel --no-autoupdate run
     environment:
