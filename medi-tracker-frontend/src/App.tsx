@@ -16,6 +16,7 @@ import Unauthorized from './pages/Unauthorized';
 import { useEffect } from 'react';
 import { useAuthStore } from './zustand/authStore';
 import { useThemeStore } from './zustand/themeStore';
+import { syncSubscription } from './lib/push';
 import { getTheme } from './lib/theme';
 import Loading from './components/ui/Loading';
 import AddPrescriptionPage from './pages/prescriptions/AddPrescriptionPage';
@@ -48,6 +49,12 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
               useEffect(() => {
                 init();
               }, [init]);
+
+              // keep this device's reminder subscription pointed at whoever is signed in
+              const token = useAuthStore((s) => s.token);
+              useEffect(() => {
+                if (token) syncSubscription(token);
+              }, [token]);
 
               const theme = getTheme(themeMode);
 

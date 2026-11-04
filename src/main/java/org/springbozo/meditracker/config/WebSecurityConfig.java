@@ -82,7 +82,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(a ->
-                        a.requestMatchers("/api/auth/**", "/api/dashboard/welcome", "/api/medicine-images/**").permitAll()
+                        a.requestMatchers("/api/auth/**", "/api/dashboard/welcome", "/api/medicine-images/**", "/api/doses/quick").permitAll()
                                 .anyRequest().authenticated()
                 );
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

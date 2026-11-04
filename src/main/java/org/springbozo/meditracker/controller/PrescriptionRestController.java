@@ -188,6 +188,7 @@ public class PrescriptionRestController {
         dto.setStartDate(prescription.getStartDate().toString());
         dto.setEndDate(prescription.getEndDate() != null ? prescription.getEndDate().toString() : null);
         dto.setTimeZone(prescription.getTimeZone());
+        dto.setNotes(prescription.getNotes());
 
         // Convert schedule
         List<PrescriptionService.ScheduleEntryDto> scheduleDto = new ArrayList<>();

@@ -23,6 +23,7 @@ import {
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
 import { useAuthStore } from "../../zustand/authStore";
+import { DOSAGE_UNITS } from "../../lib/dosageUnit";
 
 export default function EditPrescriptionPage() {
   const { id } = useParams();
@@ -39,6 +40,7 @@ export default function EditPrescriptionPage() {
 
   const [dosageAmount, setDosageAmount] = useState<number>(1);
   const [dosageUnit, setDosageUnit] = useState<string>("TABLET");
+  const [notes, setNotes] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isOngoing, setIsOngoing] = useState<boolean>(false);
@@ -79,6 +81,7 @@ export default function EditPrescriptionPage() {
         setEndDate(prescriptionFromState.endDate || "");
         setIsOngoing(!prescriptionFromState.endDate);
         setTimeZone(prescriptionFromState.timeZone);
+        setNotes(prescriptionFromState.notes || "");
 
         // Set schedule (collapse daily entries)
         const uniqueSchedule = collapseDailyEntries(prescriptionFromState.schedule);
@@ -182,6 +185,7 @@ export default function EditPrescriptionPage() {
         endDate: isOngoing ? undefined : (endDate || undefined),
         timeZone,
         schedule: expandedSchedule,
+        notes: notes.trim() || undefined,
       };
 
       await prescriptionApi.update(token, prescriptionId, dto);
@@ -236,18 +240,9 @@ export default function EditPrescriptionPage() {
                 onChange={(e) => setDosageUnit(e.target.value)}
                 fullWidth
               >
-                {[
-                  "TABLET",
-                  "CAPSULE",
-                  "PUFF",
-                  "DROP",
-                  "PATCH",
-                  "ML",
-                  "MG",
-                  "MCG",
-                ].map((u) => (
-                  <MenuItem key={u} value={u}>
-                    {u}
+                {DOSAGE_UNITS.map((u) => (
+                  <MenuItem key={u.value} value={u.value}>
+                    {u.label}
                   </MenuItem>
                 ))}
               </TextField>
@@ -291,6 +286,21 @@ export default function EditPrescriptionPage() {
                   sx={{ mt: 1, whiteSpace: "nowrap" }}
                 />
               </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Notes (optional)"
+                placeholder="e.g. Take with food, an hour after waking up"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                helperText={`Shown on your prescription list and in reminders. ${notes.length}/500`}
+                error={notes.length > 500}
+                inputProps={{ maxLength: 500 }}
+                multiline
+                minRows={2}
+                fullWidth
+              />
             </Grid>
 
             <Grid size={{ xs: 12 }}>

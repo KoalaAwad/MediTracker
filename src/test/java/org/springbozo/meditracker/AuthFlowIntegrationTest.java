@@ -56,6 +56,7 @@ class AuthFlowIntegrationTest {
         r.add("app.admin.email", () -> "Boss@Example.com");
         r.add("app.admin.password", () -> "admin-pass-123");
         r.add("app.medicine.auto-sync", () -> "false");
+        r.add("app.reminders.enabled", () -> "false");
     }
 
     @AfterAll

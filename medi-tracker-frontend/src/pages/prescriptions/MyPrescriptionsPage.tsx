@@ -139,8 +139,25 @@ export default function MyPrescriptionsPage() {
                 {prescription.medicineName}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                {prescription.dosageAmount} {prescription.dosageUnit}
+                {prescription.dosageAmount} {prescription.dosageUnit.toLowerCase()}
               </Typography>
+              {prescription.notes && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1,
+                    px: 1.5,
+                    py: 1,
+                    borderLeft: 3,
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                    borderRadius: 1,
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {prescription.notes}
+                </Typography>
+              )}
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               {expired ? (

@@ -29,7 +29,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             "/api/auth/resend-verification", new Limit(5, Duration.ofMinutes(15)),
             "/api/auth/forgot-password", new Limit(5, Duration.ofMinutes(15)),
             "/api/auth/verify-email", new Limit(20, Duration.ofMinutes(15)),
-            "/api/auth/reset-password", new Limit(20, Duration.ofMinutes(15))
+            "/api/auth/reset-password", new Limit(20, Duration.ofMinutes(15)),
+            "/api/doses/quick", new Limit(60, Duration.ofMinutes(15))
     );
 
     private final RateLimiter rateLimiter;

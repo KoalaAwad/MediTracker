@@ -12,6 +12,7 @@ export interface PrescriptionRequestDto {
   endDate?: string;  // YYYY-MM-DD
   timeZone: string;  // IANA zone, e.g., "Europe/London"
   schedule: ScheduleEntryDto[];
+  notes?: string;    // the user's own instructions, max 500 chars
 }
 
 export interface PrescriptionDto {
@@ -24,6 +25,7 @@ export interface PrescriptionDto {
   endDate?: string;
   timeZone: string;
   schedule: ScheduleEntryDto[];
+  notes?: string | null;
 }
 
 export const prescriptionApi = {

@@ -2,6 +2,8 @@ import { useAuthStore } from "../../zustand/authStore";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton, SecondaryButton } from "../../components/ui/StyledButton";
 import Navbar from "../../components/ui/Navbar";
+import TodayDoses from "../../components/doses/TodayDoses";
+import RemindersCard from "../../components/doses/RemindersCard";
 import { Box, Container, Paper, Typography, Grid, CircularProgress } from "@mui/material";
 
 export default function Dashboard() {
@@ -158,6 +160,9 @@ export default function Dashboard() {
             </Grid>
           </Grid>
         </Paper>
+
+        <TodayDoses />
+        <RemindersCard />
 
         {/* Quick Actions */}
         <Paper elevation={2} sx={{ p: 3 }}>

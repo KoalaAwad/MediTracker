@@ -79,6 +79,11 @@ public class Prescription {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    // the user's own instructions, e.g. "take with food"
+    @Column(name = "notes", length = 500)
+    @Size(max = 500)
+    private String notes;
+
     @Column(name = "active", nullable = false)
     private boolean active = true; // Soft delete flag
 

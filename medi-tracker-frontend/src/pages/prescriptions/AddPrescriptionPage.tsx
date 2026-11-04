@@ -22,6 +22,7 @@ import {
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
 import { useAuthStore } from "../../zustand/authStore";
+import { DOSAGE_UNITS, suggestDosageUnit } from "../../lib/dosageUnit";
 
 export default function AddPrescriptionPage() {
   const { id } = useParams();
@@ -34,6 +35,8 @@ export default function AddPrescriptionPage() {
 
   const [dosageAmount, setDosageAmount] = useState<number>(1);
   const [dosageUnit, setDosageUnit] = useState<string>("TABLET");
+  const [unitFromMedicine, setUnitFromMedicine] = useState(false);
+  const [notes, setNotes] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isOngoing, setIsOngoing] = useState<boolean>(false); // Track if prescription is ongoing/indefinite
@@ -66,6 +69,12 @@ export default function AddPrescriptionPage() {
         }
         const res = await medicineApi.getById(medicineId, token);
         setMedicine(res.data);
+        // capsule, tablet, ml... follows from the medicine's FDA dosage form
+        const unit = suggestDosageUnit(res.data.dosageForm, res.data.route);
+        if (unit) {
+          setDosageUnit(unit);
+          setUnitFromMedicine(true);
+        }
       } catch (err: any) {
         setError(err.response?.data?.error || "Failed to load medicine");
       } finally {
@@ -140,6 +149,7 @@ export default function AddPrescriptionPage() {
         endDate: isOngoing ? undefined : (endDate || undefined), // Ongoing = no end date
         timeZone,
         schedule: expandedSchedule,
+        notes: notes.trim() || undefined,
       };
 
       await prescriptionApi.createForMe(token, dto);
@@ -172,7 +182,16 @@ export default function AddPrescriptionPage() {
           {medicine && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1">Medicine</Typography>
-              <Typography>{medicine.name}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>
+                {medicine.name}
+                {medicine.strength ? ` ${medicine.strength}` : ""}
+              </Typography>
+              {medicine.dosageForm && (
+                <Typography variant="body2" color="text.secondary">
+                  {medicine.dosageForm.charAt(0) + medicine.dosageForm.slice(1).toLowerCase()}
+                  {medicine.manufacturer ? ` · ${medicine.manufacturer}` : ""}
+                </Typography>
+              )}
             </Box>
           )}
 
@@ -191,21 +210,16 @@ export default function AddPrescriptionPage() {
                 select
                 label="Dosage unit"
                 value={dosageUnit}
-                onChange={(e) => setDosageUnit(e.target.value)}
+                onChange={(e) => {
+                  setDosageUnit(e.target.value);
+                  setUnitFromMedicine(false);
+                }}
+                helperText={unitFromMedicine ? "Picked from the medicine's form. Change it if needed." : " "}
                 fullWidth
               >
-                {[
-                  "TABLET",
-                  "CAPSULE",
-                  "PUFF",
-                  "DROP",
-                  "PATCH",
-                  "ML",
-                  "MG",
-                  "MCG",
-                ].map((u) => (
-                  <MenuItem key={u} value={u}>
-                    {u}
+                {DOSAGE_UNITS.map((u) => (
+                  <MenuItem key={u.value} value={u.value}>
+                    {u.label}
                   </MenuItem>
                 ))}
               </TextField>
@@ -249,6 +263,21 @@ export default function AddPrescriptionPage() {
                   sx={{ mt: 1, whiteSpace: "nowrap" }}
                 />
               </Box>
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Notes (optional)"
+                placeholder="e.g. Take with food, an hour after waking up"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                helperText={`Shown on your prescription list and in reminders. ${notes.length}/500`}
+                error={notes.length > 500}
+                inputProps={{ maxLength: 500 }}
+                multiline
+                minRows={2}
+                fullWidth
+              />
             </Grid>
 
             <Grid size={{ xs: 12 }}>
