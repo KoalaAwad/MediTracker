@@ -224,11 +224,9 @@ and an account locks for 15 minutes after 10 failed logins.
 ### Profile Endpoints
 - `GET /api/profile` - Get user profile
 - `PUT /api/profile/patient` - Update patient profile
-- `PUT /api/profile/doctor` - Update doctor profile
 
 ### Admin Endpoints
 - `GET /api/admin/users` - List all users
-- `PUT /api/admin/users/{id}/role` - Update user role
 - `DELETE /api/admin/users/{id}` - Delete user
 
 ---

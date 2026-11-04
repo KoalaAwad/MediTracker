@@ -51,14 +51,14 @@ export default function EditPrescriptionPage() {
   const [dailyFlags, setDailyFlags] = useState<boolean[]>([false]);
 
   const role = useAuthStore((s) => s.user?.role || "");
-  const isPatient = role.includes("PATIENT");
+  const isUser = role.includes("USER");
   const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
-    if (!isPatient) {
+    if (!isUser) {
       navigate("/unauthorized");
     }
-  }, [isPatient, navigate]);
+  }, [isUser, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -219,7 +219,7 @@ export default function EditPrescriptionPage() {
           )}
 
           <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 label="Dosage amount"
                 type="number"
@@ -228,7 +228,7 @@ export default function EditPrescriptionPage() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 select
                 label="Dosage unit"
@@ -253,7 +253,7 @@ export default function EditPrescriptionPage() {
               </TextField>
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 label="Start date"
                 type="date"
@@ -263,7 +263,7 @@ export default function EditPrescriptionPage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
                 <TextField
                   label="End date"
@@ -293,7 +293,7 @@ export default function EditPrescriptionPage() {
               </Box>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Time zone"
                 value={timeZone}
@@ -302,7 +302,7 @@ export default function EditPrescriptionPage() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Schedule entries
               </Typography>

@@ -8,7 +8,6 @@ public class ProfileDto {
     private String name;
     private List<String> roles;
     private PatientProfileDto patientProfile;
-    private DoctorProfileDto doctorProfile;
 
     // Constructors
     public ProfileDto() {}
@@ -61,12 +60,5 @@ public class ProfileDto {
         this.patientProfile = patientProfile;
     }
 
-    public DoctorProfileDto getDoctorProfile() {
-        return doctorProfile;
-    }
-
-    public void setDoctorProfile(DoctorProfileDto doctorProfile) {
-        this.doctorProfile = doctorProfile;
-    }
 }
 

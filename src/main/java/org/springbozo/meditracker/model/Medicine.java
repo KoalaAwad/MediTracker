@@ -32,6 +32,25 @@ public class Medicine {
 
     // OpenFDA data as JSONB: contains brand_name, generic_name, substance_name,
     // rxcui, pharm_class_* arrays exactly as provided by FDA
+    // From the openFDA NDC directory; null for medicines added by hand
+    @Column(name = "product_ndc")
+    private String productNdc;
+
+    // e.g. "1 mg" or "5 mg / 10 mg" for combination products
+    private String strength;
+
+    @Column(name = "dosage_form")
+    private String dosageForm;
+
+    private String route;
+
+    @Column(name = "product_type")
+    private String productType;
+
+    // DailyMed label id, used for the package label image and pill description
+    @Column(name = "spl_set_id")
+    private String splSetId;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "openfda", columnDefinition = "jsonb")
     private java.util.Map<String, java.util.List<String>> openfda;

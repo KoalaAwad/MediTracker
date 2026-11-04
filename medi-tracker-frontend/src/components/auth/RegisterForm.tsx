@@ -2,8 +2,6 @@ import {
     Avatar,
     Box,
     Button,
-    Container,
-    CssBaseline,
     Grid,
     TextField,
     Typography,
@@ -17,7 +15,7 @@ import {
   import { authApi } from "../../api/authApi";
 
   const Item = styled(Paper)(({ theme }) => ({
-    backgroundColor: "#fff",
+    backgroundColor: theme.palette.background.paper,
     ...theme.typography.body2,
     padding: theme.spacing(1),
     textAlign: "center",
@@ -67,18 +65,6 @@ import {
     }
 
     return (
-      <Box
-        sx={{
-          width: "100%",
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "background.default",
-          px: 2,
-        }}
-      >
-        <CssBaseline />
         <Paper
           elevation={3}
           sx={{
@@ -103,50 +89,44 @@ import {
           )}
 
           <Box component="form" onSubmit={handleRegister} sx={{ mt: 3, width: "100%" }} noValidate>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  name="name"
-                  required
-                  fullWidth
-                  id="name"
-                  label="Name"
-                  autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={loading}
-                />
-              </Grid>
+            <TextField
+              name="name"
+              required
+              fullWidth
+              id="name"
+              label="Name"
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
+              sx={{ mb: 2 }}
+            />
 
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                />
-              </Grid>
+            <TextField
+              required
+              fullWidth
+              id="email"
+              label="Email Address"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              sx={{ mb: 2 }}
+            />
 
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  helperText="At least 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                />
-              </Grid>
-            </Grid>
+            <TextField
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              helperText="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+            />
 
             <Button
               type="submit"
@@ -165,7 +145,6 @@ import {
             </Grid>
           </Box>
         </Paper>
-      </Box>
     );
   };
 

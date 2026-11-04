@@ -35,7 +35,7 @@ export default function Dashboard() {
   }
 
   const isAdmin = user.role.includes("ADMIN");
-  const isPatient = user.role.includes("PATIENT");
+  const isUser = user.role.includes("USER");
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -50,7 +50,7 @@ export default function Dashboard() {
             Welcome back, {user.name}!
           </Typography>
           <Grid container spacing={3} justifyContent="center">
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Box
                 sx={{
                   bgcolor: "background.paper",
@@ -88,7 +88,7 @@ export default function Dashboard() {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Box
                 sx={{
                   bgcolor: "background.paper",
@@ -111,18 +111,18 @@ export default function Dashboard() {
                   color="text.secondary"
                   sx={{ fontSize: "0.875rem", fontWeight: 500 }}
                 >
-                  Role
+                  Account type
                 </Typography>
                 <Typography
                   variant="h6"
                   color="text.primary"
                   sx={{ fontSize: "1.125rem", fontWeight: 600 }}
                 >
-                  {user.role}
+                  {isAdmin ? "Admin" : "User"}
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <Box
                 sx={{
                   bgcolor: "background.paper",
@@ -165,20 +165,20 @@ export default function Dashboard() {
             Quick Actions
           </Typography>
           <Grid container spacing={3} justifyContent="center">
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <PrimaryButton fullWidth onClick={() => navigate("/medicine")}>
                 View Medicine
               </PrimaryButton>
             </Grid>
-            {isPatient && (
-              <Grid item xs={12} sm={6} md={4}>
+            {isUser && (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <PrimaryButton fullWidth onClick={() => navigate("/prescriptions")}>
                   View Prescriptions
                 </PrimaryButton>
               </Grid>
             )}
             {isAdmin && (
-              <Grid item xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <PrimaryButton fullWidth onClick={() => navigate("/admin/users")}>
                   View Users
                 </PrimaryButton>

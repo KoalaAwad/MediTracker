@@ -30,10 +30,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = await authApi.getCurrentUser(storedToken);
       set({ user: response.data, token: storedToken, isAuthenticated: true, isLoading: false, error: null });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth check failed:', error);
-      localStorage.removeItem('token');
-      set({ user: null, token: null, isAuthenticated: false, isLoading: false, error: 'Session expired' });
+      // only a rejected token ends the session; a server hiccup (e.g. mid-deploy) keeps it for the next load
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('token');
+        set({ user: null, token: null, isAuthenticated: false, isLoading: false, error: 'Session expired' });
+      } else {
+        set({ user: null, isAuthenticated: false, isLoading: false, error: 'Could not reach the server' });
+      }
     }
   },
 

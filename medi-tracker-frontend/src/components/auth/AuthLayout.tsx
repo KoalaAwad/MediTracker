@@ -1,12 +1,9 @@
-import { Box, CssBaseline, Paper, ThemeProvider, Typography } from "@mui/material";
-import { getTheme } from "../../lib/theme";
+import { Box, Paper, Typography } from "@mui/material";
 
-// Centered light-theme card used by the email verification and password reset pages
+// Centered card used by the email verification and password reset pages
 export default function AuthLayout({ title, children }: { title: string; children: React.ReactNode }) {
-  const lightTheme = getTheme("light");
 
   return (
-    <ThemeProvider theme={lightTheme}>
       <Box
         sx={{
           width: "100%",
@@ -18,7 +15,6 @@ export default function AuthLayout({ title, children }: { title: string; childre
           px: 2,
         }}
       >
-        <CssBaseline />
         <Paper elevation={3} sx={{ width: "100%", maxWidth: 420, p: 4 }}>
           <Typography variant="h5" align="center" sx={{ mb: 2 }}>
             {title}
@@ -26,6 +22,5 @@ export default function AuthLayout({ title, children }: { title: string; childre
           {children}
         </Paper>
       </Box>
-    </ThemeProvider>
   );
 }

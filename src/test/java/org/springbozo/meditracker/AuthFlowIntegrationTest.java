@@ -55,6 +55,7 @@ class AuthFlowIntegrationTest {
         r.add("jwt.secret", () -> "test-secret-test-secret-test-secret-0123456789");
         r.add("app.admin.email", () -> "Boss@Example.com");
         r.add("app.admin.password", () -> "admin-pass-123");
+        r.add("app.medicine.auto-sync", () -> "false");
     }
 
     @AfterAll
@@ -106,11 +107,39 @@ class AuthFlowIntegrationTest {
     void adminIsBootstrappedFromEnv() throws Exception {
         String body = postJson("/api/auth/login", Map.of("email", "boss@example.com", "password", "admin-pass-123"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.role").value(org.hamcrest.Matchers.containsString("ADMIN")))
+                .andExpect(jsonPath("$.role").value(org.hamcrest.Matchers.allOf(
+                        org.hamcrest.Matchers.containsString("ADMIN"), org.hamcrest.Matchers.containsString("USER"))))
                 .andReturn().getResponse().getContentAsString();
         String token = json.readTree(body).get("token").asText();
         mvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+        // the admin's health profile exists, so they can track medicines too
+        mvc.perform(get("/api/auth/profile").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientProfile").exists());
+    }
+
+    @Test
+    void regularUsersCannotUseAdminEndpoints() throws Exception {
+        String token = verifiedLogin("plain@example.com", "plain-pass-1");
+        mvc.perform(get("/api/admin/users").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/auth/profile").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.roles[0]").value("USER"))
+                .andExpect(jsonPath("$.patientProfile").exists());
+    }
+
+    @Test
+    void adminCannotDeleteThemselvesFromUserList() throws Exception {
+        String body = postJson("/api/auth/login", Map.of("email", "boss@example.com", "password", "admin-pass-123"))
+                .andReturn().getResponse().getContentAsString();
+        var node = json.readTree(body);
+        String token = node.get("token").asText();
+        String me = mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + token))
+                .andReturn().getResponse().getContentAsString();
+        int myId = json.readTree(me).get("userId").asInt();
+        mvc.perform(delete("/api/admin/users/" + myId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -146,7 +175,8 @@ class AuthFlowIntegrationTest {
 
         postJson("/api/auth/login", Map.of("email", email, "password", "long-enough-1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").exists());
+                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.role").value("USER"));
 
         // verified accounts don't get more verification emails
         postJson("/api/auth/resend-verification", Map.of("email", email)).andExpect(status().isOk());

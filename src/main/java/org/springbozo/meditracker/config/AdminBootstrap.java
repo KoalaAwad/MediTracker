@@ -72,7 +72,7 @@ public class AdminBootstrap implements ApplicationRunner {
         // an existing account keeps its own password and roles, and gains admin + patient
         Set<Role> roles = new HashSet<>(user.getRoles());
         roles.add(roleRepository.getByRoleName(Constants.ADMIN_ROLE));
-        roles.add(roleRepository.getByRoleName(Constants.PATIENT_ROLE));
+        roles.add(roleRepository.getByRoleName(Constants.USER_ROLE));
         user.setRoles(roles);
         User saved = userRepository.save(user);
 

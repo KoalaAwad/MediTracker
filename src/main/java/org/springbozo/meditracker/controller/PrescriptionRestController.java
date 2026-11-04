@@ -2,6 +2,7 @@ package org.springbozo.meditracker.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.model.Prescription;
+import org.springbozo.meditracker.model.Medicine;
 import org.springbozo.meditracker.model.embedded.ScheduleEntry;
 import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.PrescriptionService;
@@ -179,7 +180,9 @@ public class PrescriptionRestController {
 
         dto.setId(prescription.getId());
         dto.setMedicineId(prescription.getMedicine().getId());
-        dto.setMedicineName(prescription.getMedicine().getName());
+        // include the strength so "Prograf 1 mg" and "Prograf 5 mg" prescriptions are told apart
+        Medicine med = prescription.getMedicine();
+        dto.setMedicineName(med.getStrength() == null ? med.getName() : med.getName() + " " + med.getStrength());
         dto.setDosageAmount(prescription.getDosage().getAmount());
         dto.setDosageUnit(prescription.getDosage().getUnit().toString());
         dto.setStartDate(prescription.getStartDate().toString());

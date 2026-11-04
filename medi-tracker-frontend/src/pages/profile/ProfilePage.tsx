@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { profileApi, ProfileDto } from "../../api/profileApi";
 import PatientProfileSection from "../../components/profile/PatientProfileSection";
-import DoctorProfileSection from "../../components/profile/DoctorProfileSection";
 import DeleteAccountSection from "../../components/profile/DeleteAccountSection";
 import Loading from "../../components/ui/Loading";
 import Navbar from "../../components/ui/Navbar";
@@ -57,37 +56,16 @@ export default function ProfilePage() {
       if (!token) return;
 
       await profileApi.updatePatientProfile(token, updated);
-      setSuccessMessage("Patient profile updated successfully");
+      setSuccessMessage("Health information updated");
       setError(null);
 
       // Refresh profile
       const response = await profileApi.getProfile(token);
       setProfile(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to update patient profile");
+      setError(err.response?.data?.error || "Failed to update health information");
     }
   };
-
-  const handleDoctorSave = async (updated: any) => {
-    try {
-      if (!token) return;
-
-      await profileApi.updateDoctorProfile(token, updated);
-      setSuccessMessage("Doctor profile updated successfully");
-      setError(null);
-
-      // Refresh profile
-      const response = await profileApi.getProfile(token);
-      setProfile(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to update doctor profile");
-    }
-  };
-
-  // Helper flags based on roles
-  const hasPatientRole = profile?.roles.includes("PATIENT");
-  const hasDoctorRole = profile?.roles.includes("DOCTOR");
-  const isAdminOnly = profile?.roles.length === 1 && profile.roles.includes("ADMIN");
 
   if (loading) {
     return <Loading label="Loading profile..." />;
@@ -125,46 +103,27 @@ export default function ProfilePage() {
                 </Typography>
                 <Typography sx={{ mb: 2 }}>{profile.name}</Typography>
 
-                <Typography variant="subtitle2" color="textSecondary">
-                  Roles
-                </Typography>
-                <Typography sx={{ mb: 2 }}>
-                  {profile.roles.join(", ")}
-                </Typography>
+                {profile.roles.includes("ADMIN") && (
+                  <>
+                    <Typography variant="subtitle2" color="textSecondary">
+                      Account type
+                    </Typography>
+                    <Typography sx={{ mb: 2 }}>Admin</Typography>
+                  </>
+                )}
               </Box>
             </Paper>
 
-            {/* Editable Sections: show based on roles only. Admin has no dedicated editable section. */}
-            {!isAdminOnly && (
-              <>
-                {/* Patient Profile Section */}
-                {hasPatientRole && (
-                  <PatientProfileSection
-                    profile={
-                      profile.patientProfile ?? {
-                        id: profile.userId,
-                        name: profile.name,
-                        active: true,
-                      } as any
-                    }
-                    onSave={handlePatientSave}
-                  />
-                )}
-
-                {/* Doctor Profile Section */}
-                {hasDoctorRole && (
-                  <DoctorProfileSection
-                    profile={
-                      profile.doctorProfile ?? {
-                        id: profile.userId,
-                        active: true,
-                      } as any
-                    }
-                    onSave={handleDoctorSave}
-                  />
-                )}
-              </>
-            )}
+            <PatientProfileSection
+              profile={
+                profile.patientProfile ?? {
+                  id: profile.userId,
+                  name: profile.name,
+                  active: true,
+                } as any
+              }
+              onSave={handlePatientSave}
+            />
 
             <DeleteAccountSection />
           </>

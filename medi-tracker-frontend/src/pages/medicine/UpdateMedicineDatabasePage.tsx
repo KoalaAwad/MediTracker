@@ -1,279 +1,116 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Button,
-  Alert,
-  LinearProgress,
-  List,
-  ListItem,
-
-  ListItemText,
-} from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
-import { medicineApi } from "../../api/medicineApi";
-import Navbar from "../../components/ui/Navbar";
+import { Alert, Box, Button, Container, LinearProgress, Paper, Typography } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { medicineApi, SyncStatus } from "../../api/medicineApi";
 import { useAuthStore } from "../../zustand/authStore";
+import Navbar from "../../components/ui/Navbar";
 import { PrimaryButton } from "../../components/ui/StyledButton";
 
+// openFDA currently lists about 115k finished products
+const EXPECTED_PRODUCTS = 115000;
+
 export default function UpdateMedicineDatabasePage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any | null>(null);
   const navigate = useNavigate();
   const token = useAuthStore((s) => s.token);
+  const isAdmin = useAuthStore((s) => s.user?.role.includes("ADMIN") ?? false);
+  const [status, setStatus] = useState<SyncStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const validateJsonFile = (file: File): string | null => {
-    // Check file extension
-    if (!file.name.toLowerCase().endsWith(".json")) {
-      return "File must be a .json file";
-    }
-
-    // Check file size (150MB max)
-    const maxSize = 150 * 1024 * 1024; // 150MB
-    if (file.size > maxSize) {
-      return "File size exceeds 150MB limit";
-    }
-
-    // Check file size minimum (must be at least 10 bytes)
-    if (file.size < 10) {
-      return "File is too small or empty";
-    }
-
-    return null;
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    setError(null);
-    setResult(null);
-
-    if (!selectedFile) {
-      setFile(null);
-      return;
-    }
-
-    const validationError = validateJsonFile(selectedFile);
-    if (validationError) {
-      setError(validationError);
-      setFile(null);
-      return;
-    }
-
-    setFile(selectedFile);
-  };
-
-  const handleUpload = async () => {
-    if (!file || !token) return;
-
-    setUploading(true);
-    setError(null);
-    setResult(null);
-
+  const refresh = useCallback(async () => {
+    if (!token) return;
     try {
-      // Read file as text
-      const text = await file.text();
-
-      // Validate JSON structure
-      let jsonData;
-      try {
-        jsonData = JSON.parse(text);
-      } catch (e) {
-        throw new Error("Invalid JSON format");
-      }
-
-      // Validate structure (must have 'results' array)
-      if (!jsonData.results || !Array.isArray(jsonData.results)) {
-        throw new Error(
-          "Invalid JSON structure: must contain a 'results' array"
-        );
-      }
-
-      if (jsonData.results.length === 0) {
-        throw new Error("JSON file contains no drug records");
-      }
-
-      if (jsonData.results.length > 50000) {
-        throw new Error(
-          `Too many records: ${jsonData.results.length} (max 50,000)`
-        );
-      }
-
-      // Send to backend
-      const response = await medicineApi.importMedicines(jsonData, token);
-      setResult(response.data);
+      const res = await medicineApi.getSyncStatus(token);
+      setStatus(res.data);
     } catch (err: any) {
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else if (err.message) {
-        setError(err.message);
-      } else {
-        setError("Failed to upload file");
-      }
-    } finally {
-      setUploading(false);
+      setError(err.response?.data?.error || "Could not load sync status");
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate("/unauthorized");
+      return;
+    }
+    refresh();
+  }, [isAdmin, navigate, refresh]);
+
+  // poll while a sync runs
+  useEffect(() => {
+    if (!status?.running) return;
+    const timer = setInterval(refresh, 2000);
+    return () => clearInterval(timer);
+  }, [status?.running, refresh]);
+
+  const start = async () => {
+    if (!token) return;
+    setError(null);
+    try {
+      await medicineApi.startSync(token);
+      setStatus((s) => (s ? { ...s, running: true, imported: 0, error: undefined } : s));
+      refresh();
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Could not start the sync");
     }
   };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Navbar />
-
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
-          Update Medicine Database
-        </Typography>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/medicine")} sx={{ mb: 2 }}>
+          Back to medicines
+        </Button>
 
         <Paper elevation={2} sx={{ p: 4 }}>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Upload an OpenFDA Drugs@FDA JSON file to update the medicine
-            database. This will UPSERT medicine data.
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Medicine database
+          </Typography>
+          <Typography color="text.secondary" sx={{ mb: 3 }}>
+            Medicines come from the FDA's NDC directory: every prescription and over-the-counter
+            product sold in the US, with strength, form and manufacturer. The server downloads it
+            itself on first start and every Sunday. Use the button to update now.
           </Typography>
 
-          <Alert severity="info" sx={{ mb: 3 }}>
-            <strong>Data Source:</strong>
-            <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
-              Download the <strong>Human Drugs@FDA</strong> dataset from the official FDA data portal:
-            </Typography>
-            <Button
-              variant="contained"
-              size="small"
-              href="https://open.fda.gov/data/downloads/"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ mb: 2 }}
-            >
-              openFDA Data Downloads
-            </Button>
-            <Typography variant="body2" color="text.secondary">
-              This application's schema is designed for the <strong>Human Drugs@FDA</strong> table structure.
-              Download the JSON file and upload it below to update the medicine database.
-            </Typography>
-          </Alert>
-
-          <Alert severity="info" sx={{ mb: 3 }}>
-            <strong>File Requirements:</strong>
-            <List dense>
-              <ListItem>
-                <ListItemText primary="• File format: .json" />
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="• Maximum size: 150MB" />
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="• Must contain 'results' array with drug records" />
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="• Maximum 50,000 records per file" />
-              </ListItem>
-            </List>
-          </Alert>
-
           {error && (
-            <Alert severity="error" sx={{ mb: 3 }} icon={<ErrorIcon />}>
+            <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
-          {result && (
-            <Alert severity="success" sx={{ mb: 3 }} icon={<CheckCircleIcon />}>
-              <Typography variant="h6" gutterBottom>
-                Upload Complete!
-              </Typography>
-              <List dense>
-                <ListItem>
-                  <ListItemText
-                    primary={`✓ Created: ${result.created} medicines`}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary={`⊘ Skipped: ${result.skipped} (duplicates or invalid)`}
-                  />
-                </ListItem>
-                {result.skippedNoName > 0 && (
-                  <ListItem>
-                    <ListItemText
-                      primary={`  - ${result.skippedNoName} had no name`}
-                    />
-                  </ListItem>
-                )}
-                {result.skippedError > 0 && (
-                  <ListItem>
-                    <ListItemText
-                      primary={`  - ${result.skippedError} had errors`}
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Alert>
-          )}
-
-          <Box sx={{ mb: 3 }}>
-            <input
-              accept=".json"
-              style={{ display: "none" }}
-              id="file-upload"
-              type="file"
-              onChange={handleFileChange}
-              disabled={uploading}
-            />
-            <label htmlFor="file-upload">
-              <Button
-                variant="outlined"
-                component="span"
-                startIcon={<CloudUploadIcon />}
-                disabled={uploading}
-                fullWidth
-                sx={{ py: 2 }}
-              >
-                {file ? file.name : "Choose JSON File"}
-              </Button>
-            </label>
-          </Box>
-
-          {file && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              File size: {(file.size / 1024 / 1024).toFixed(2)} MB
-            </Typography>
-          )}
-
-          {uploading && (
+          {status && (
             <Box sx={{ mb: 3 }}>
-              <LinearProgress />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 1 }}
-              >
-                Uploading and processing... This may take several minutes for
-                large files.
+              <Typography sx={{ mb: 1 }}>
+                <strong>{status.total.toLocaleString()}</strong> medicines available
               </Typography>
+              {status.running ? (
+                <>
+                  <LinearProgress
+                    variant={status.imported > 0 ? "determinate" : "indeterminate"}
+                    value={Math.min(100, (status.imported / EXPECTED_PRODUCTS) * 100)}
+                    sx={{ mb: 1 }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {status.imported > 0
+                      ? `Importing... ${status.imported.toLocaleString()} products so far`
+                      : "Downloading from openFDA..."}
+                  </Typography>
+                </>
+              ) : status.error ? (
+                <Alert severity="error">{status.error}</Alert>
+              ) : status.finishedAt ? (
+                <Alert severity="success">
+                  Last updated {new Date(status.finishedAt).toLocaleString()}.
+                </Alert>
+              ) : null}
             </Box>
           )}
 
-          <PrimaryButton
-            onClick={handleUpload}
-            disabled={!file || uploading}
-            fullWidth
-            sx={{ py: 1.5 }}
-          >
-            {uploading ? "Uploading..." : "Upload and Update Database"}
+          <PrimaryButton onClick={start} disabled={!status || status.running}>
+            {status?.running ? "Updating..." : "Update from openFDA"}
           </PrimaryButton>
-
-          <Alert severity="warning" sx={{ mt: 3 }}>
-            <strong>Note:</strong> This operation will UPSERT medicines (insert new or update existing).
-            Medicines with the same name will be updated with new data from the uploaded file.
-          </Alert>
         </Paper>
       </Container>
     </Box>
   );
 }
-

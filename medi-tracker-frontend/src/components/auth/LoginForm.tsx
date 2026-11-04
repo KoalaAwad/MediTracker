@@ -15,7 +15,7 @@ import { useState } from "react";
     import { authApi } from "../../api/authApi";
 
     const Item = styled(Paper)(({ theme }) => ({
-      backgroundColor: "#fff",
+      backgroundColor: theme.palette.background.paper,
       ...theme.typography.body2,
       padding: theme.spacing(1),
       textAlign: "center",

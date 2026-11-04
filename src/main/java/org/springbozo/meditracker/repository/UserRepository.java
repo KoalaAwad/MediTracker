@@ -21,11 +21,7 @@ public interface UserRepository extends CrudRepository<User,Integer> {
 
     User findByEmailIgnoreCase(String email);
 
-    // return all users that have the given role (e.g. "DOCTOR")
+    // return all users that have the given role (e.g. "ADMIN")
     @Query("select distinct u from User u join u.roles r where r.roleName = :roleName")
     List<User> findByRoleName(@Param("roleName") String roleName);
-
-    // return users that have the given role and no other roles (only that role)
-    @Query("select u from User u join u.roles r where r.roleName = :roleName and size(u.roles) = 1")
-    List<User> findByOnlyRoleName(@Param("roleName") String roleName);
 }
