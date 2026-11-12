@@ -7,9 +7,9 @@ import { useAuthStore } from "../../zustand/authStore";
 const STATUS: Record<DoseStatus, { label: string; color: "success" | "default" | "warning" | "error" | "info" }> = {
   TAKEN: { label: "Taken", color: "success" },
   SKIPPED: { label: "Skipped", color: "default" },
+  NOW: { label: "Now", color: "warning" },
   UPCOMING: { label: "Upcoming", color: "info" },
-  DUE: { label: "Due now", color: "warning" },
-  MISSED: { label: "Missed", color: "error" },
+  PAST: { label: "Past", color: "error" },
 };
 
 /** Today's doses with one-tap Taken / Skip. */
@@ -33,7 +33,7 @@ export default function TodayDoses() {
 
   useEffect(() => {
     load();
-    // statuses move on by themselves (upcoming -> due -> missed)
+    // statuses move on by themselves (upcoming -> now -> past)
     const timer = setInterval(load, 60_000);
     // a Taken/Skip tapped on a notification
     const onMessage = (e: MessageEvent) => e.data?.type === "dose-logged" && load();
@@ -100,7 +100,7 @@ export default function TodayDoses() {
               key={key}
               sx={{ display: "flex", alignItems: "center", gap: 2, py: 1.5, flexWrap: { xs: "wrap", sm: "nowrap" } }}
             >
-              <Typography sx={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", minWidth: 48 }}>
+              <Typography sx={{ fontWeight: 700, fontVariantNumeric: "tabular-nums", minWidth: 48, color: dose.status === "PAST" ? "error.main" : undefined }}>
                 {dose.localTime}
               </Typography>
               <Box sx={{ flex: 1, minWidth: 160 }}>
@@ -114,7 +114,7 @@ export default function TodayDoses() {
                   </Typography>
                 )}
               </Box>
-              <Chip label={s.label} color={s.color} size="small" variant={logged ? "filled" : "outlined"} />
+              <Chip label={s.label} color={s.color} size="small" variant={logged || dose.status === "PAST" ? "filled" : "outlined"} />
               <Box sx={{ display: "flex", gap: 1 }}>
                 {logged ? (
                   <Button size="small" disabled={busy === key} onClick={() => mark(dose, "PENDING")}>

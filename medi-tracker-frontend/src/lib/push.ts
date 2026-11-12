@@ -79,7 +79,3 @@ export async function syncSubscription(token: string) {
     // reminders settings will show the real state
   }
 }
-
-export async function sendTestReminder(token: string) {
-  await axiosClient.post("/push/test", null, auth(token));
-}

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springbozo.meditracker.controller.DoseController;
 import org.springbozo.meditracker.model.Prescription;
 import org.springbozo.meditracker.model.embedded.Dosage;
 import org.springbozo.meditracker.model.embedded.ScheduleEntry;
@@ -219,19 +220,51 @@ class ReminderIntegrationTest {
     }
 
     @Test
-    void dosesFromBeforeThePrescriptionWasAddedAreHiddenUnlessLogged() throws Exception {
-        // pretend it was added at 09:00, after today's 08:00 dose
-        jdbc.update("UPDATE prescription SET created_at = ? WHERE prescription_id = ?",
-                java.sql.Timestamp.from(eightAm.plus(Duration.ofHours(1))), prescriptionId);
-        mvc.perform(get("/api/doses/today").header("Authorization", "Bearer " + token))
-                .andExpect(jsonPath("$.length()").value(0));
+    void doseStatusIsNowFromHalfAnHourBeforeToAnHourAfter() {
+        Instant at = eightAm;
+        assertThat(DoseController.status(null, at, at.minus(Duration.ofMinutes(31)))).isEqualTo("UPCOMING");
+        assertThat(DoseController.status(null, at, at.minus(Duration.ofMinutes(30)))).isEqualTo("NOW");
+        assertThat(DoseController.status(null, at, at)).isEqualTo("NOW");
+        assertThat(DoseController.status(null, at, at.plus(Duration.ofMinutes(60)))).isEqualTo("NOW");
+        assertThat(DoseController.status(null, at, at.plus(Duration.ofMinutes(61)))).isEqualTo("PAST");
 
-        mvc.perform(post("/api/doses").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
-                        .content(json.writeValueAsString(Map.of("prescriptionId", String.valueOf(prescriptionId),
-                                "scheduledAt", eightAm.toString(), "status", "TAKEN"))))
-                .andExpect(status().isOk());
-        mvc.perform(get("/api/doses/today").header("Authorization", "Bearer " + token))
-                .andExpect(jsonPath("$[0].status").value("TAKEN"));
+        // a logged dose keeps its status wherever it sits in the day
+        var taken = new org.springbozo.meditracker.model.DoseLog();
+        taken.setStatus(org.springbozo.meditracker.model.enums.DoseStatus.TAKEN);
+        assertThat(DoseController.status(taken, at, at.plus(Duration.ofHours(5)))).isEqualTo("TAKEN");
+        var pending = new org.springbozo.meditracker.model.DoseLog();
+        pending.setStatus(org.springbozo.meditracker.model.enums.DoseStatus.PENDING);
+        assertThat(DoseController.status(pending, at, at.plus(Duration.ofHours(5)))).isEqualTo("PAST");
+    }
+
+    @Test
+    void todayListsNowThenUpcomingThenPast() throws Exception {
+        // doses every 3 hours today, so whatever time the test runs there's a past, a now and an upcoming one
+        jdbc.update("UPDATE prescription SET active = FALSE");
+        LocalDate today = LocalDate.now(DUBAI);
+        Integer medicineId = jdbc.queryForObject("SELECT medicine_id FROM prescription WHERE prescription_id = ?",
+                Integer.class, prescriptionId);
+        List<Map<String, String>> schedule = new java.util.ArrayList<>();
+        for (int h = 0; h < 24; h += 3) {
+            schedule.add(Map.of("dayOfWeek", today.getDayOfWeek().name(), "timeOfDay", String.format("%02d:00", h)));
+        }
+        mvc.perform(post("/api/prescriptions").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("medicineId", medicineId,
+                                "dosage", Map.of("amount", 1, "unit", "CAPSULE"), "startDate", today.toString(),
+                                "timeZone", "Asia/Dubai", "schedule", schedule))))
+                .andExpect(status().isCreated());
+
+        JsonNode list = json.readTree(mvc.perform(get("/api/doses/today").header("Authorization", "Bearer " + token))
+                .andReturn().getResponse().getContentAsString());
+        // doses from before the prescription was added are shown too
+        assertThat(list).hasSize(8);
+        List<String> statuses = new java.util.ArrayList<>();
+        list.forEach(d -> statuses.add(d.get("status").asText()));
+        int lastNow = statuses.lastIndexOf("NOW"), firstUpcoming = statuses.indexOf("UPCOMING"), firstPast = statuses.indexOf("PAST");
+        if (lastNow >= 0 && firstUpcoming >= 0) assertThat(lastNow).isLessThan(firstUpcoming);
+        if (firstUpcoming >= 0 && firstPast >= 0) assertThat(statuses.lastIndexOf("UPCOMING")).isLessThan(firstPast);
+        if (lastNow >= 0 && firstPast >= 0) assertThat(lastNow).isLessThan(firstPast);
+        assertThat(statuses).doesNotContain("DUE", "MISSED");
     }
 
     @Test

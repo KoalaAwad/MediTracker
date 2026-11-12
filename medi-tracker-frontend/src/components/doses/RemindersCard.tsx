@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import { useAuthStore } from "../../zustand/authStore";
-import { disableReminders, enableReminders, reminderState, ReminderState, sendTestReminder } from "../../lib/push";
+import { disableReminders, enableReminders, reminderState, ReminderState } from "../../lib/push";
 
 /** Turn dose reminders on or off for the device you're using. */
 export default function RemindersCard() {
@@ -39,12 +39,6 @@ export default function RemindersCard() {
       setState("off");
     });
 
-  const test = () =>
-    run(async () => {
-      await sendTestReminder(token!);
-      setMessage({ type: "success", text: "Test sent. It should appear in a few seconds." });
-    });
-
   return (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
       <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
@@ -56,13 +50,11 @@ export default function RemindersCard() {
       {state === "on" && (
         <>
           <Typography color="text.secondary" sx={{ mb: 2 }}>
-            This device gets a notification when a dose is due, and again 30 minutes later if it isn't marked.
-            You can tap Taken or Skip right on the notification.
+            This browser gets a notification when a dose is due, and again 30 minutes later if it isn't marked.
+            You can tap Taken or Skip right on the notification. Turn reminders on separately on each
+            computer or phone you want them on.
           </Typography>
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-            <Button variant="outlined" onClick={test} disabled={busy}>
-              Send a test
-            </Button>
             <Button onClick={turnOff} disabled={busy}>
               Turn off on this device
             </Button>

@@ -12,23 +12,27 @@ self.addEventListener("push", (event) => {
     data = { title: "MediTracker", body: event.data ? event.data.text() : "" };
   }
   const isDose = Boolean(data.doseId);
+  const title = data.title || "MediTracker";
   event.waitUntil(
-    self.registration.showNotification(data.title || "MediTracker", {
-      body: data.body || "",
-      tag: data.tag,
-      // a follow-up replaces the first reminder but should still buzz
-      renotify: Boolean(data.tag),
-      requireInteraction: isDose,
-      icon: "/icon-192.png",
-      badge: "/badge-96.png",
-      data,
-      actions: isDose
-        ? [
-            { action: "taken", title: "Taken" },
-            { action: "skip", title: "Skip" },
-          ]
-        : [],
-    })
+    self.registration
+      .showNotification(title, {
+        body: data.body || "",
+        tag: data.tag,
+        // a follow-up replaces the first reminder but should still buzz
+        renotify: Boolean(data.tag),
+        requireInteraction: isDose,
+        icon: "/icon-192.png",
+        badge: "/badge-96.png",
+        data,
+        actions: isDose
+          ? [
+              { action: "taken", title: "Taken" },
+              { action: "skip", title: "Skip" },
+            ]
+          : [],
+      })
+      // a browser that rejects one of the options above still gets a plain reminder
+      .catch(() => self.registration.showNotification(title, { body: data.body || "", data }))
   );
 });
 

@@ -1,6 +1,6 @@
 import axiosClient from "../lib/axiosClient";
 
-export type DoseStatus = "TAKEN" | "SKIPPED" | "UPCOMING" | "DUE" | "MISSED";
+export type DoseStatus = "TAKEN" | "SKIPPED" | "NOW" | "UPCOMING" | "PAST";
 
 export interface TodayDose {
   prescriptionId: number;

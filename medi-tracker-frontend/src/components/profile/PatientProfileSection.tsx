@@ -166,49 +166,49 @@ export default function PatientProfileSection({
                 <Typography variant="subtitle2" color="textSecondary">
                   Name
                 </Typography>
-                <Typography>{formData.name || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.name}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Gender
                 </Typography>
-                <Typography>{formData.gender || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.gender}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Date of Birth
                 </Typography>
-                <Typography>{formData.dateOfBirth || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.dateOfBirth}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Phone
                 </Typography>
-                <Typography>{formData.phone || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.phone}</Typography>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Address
                 </Typography>
-                <Typography>{formData.address || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.address}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Blood Type
                 </Typography>
-                <Typography>{formData.bloodType || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.bloodType}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Allergies
                 </Typography>
-                <Typography>{formData.allergies || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.allergies}</Typography>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Medical History
                 </Typography>
-                <Typography>{formData.medicalHistory || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.medicalHistory}</Typography>
               </Grid>
             </>
           )}

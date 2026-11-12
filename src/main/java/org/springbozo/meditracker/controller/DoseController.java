@@ -44,7 +44,8 @@ public class DoseController {
 
     /**
      * Today's doses for every active prescription, in time order, each with its status:
-     * TAKEN, SKIPPED, UPCOMING, DUE (time has come, not logged yet) or MISSED (over 2 hours late).
+     * TAKEN, SKIPPED, NOW (from 30 minutes before to an hour after), UPCOMING or PAST.
+     * Sorted Now, then Upcoming, then Past, each by time.
      * "Today" is the prescription's own time zone.
      */
     @GetMapping("/today")
@@ -68,11 +69,8 @@ public class DoseController {
 
         List<Map<String, Object>> out = new ArrayList<>();
         for (Prescription p : mine) {
-            Instant added = p.getCreatedAt() == null ? null : p.getCreatedAt().truncatedTo(java.time.temporal.ChronoUnit.MINUTES);
             for (Instant at : byPrescription.get(String.valueOf(p.getId()))) {
                 DoseLog log = logged.get(key(p.getId(), at));
-                // a dose from before the prescription was added isn't "missed", unless someone logged it
-                if (log == null && added != null && at.isBefore(added)) continue;
                 Map<String, Object> item = new LinkedHashMap<>();
                 item.put("prescriptionId", p.getId());
                 item.put("medicineId", p.getMedicine().getId());
@@ -82,12 +80,15 @@ public class DoseController {
                 item.put("scheduledAt", at.toString());
                 item.put("localTime", at.atZone(zoneOf(p)).format(HH_MM));
                 item.put("status", status(log, at, now));
+                item.put("phase", phase(at, now));
                 item.put("statusAt", log == null || log.getStatusAt() == null ? null : log.getStatusAt().toString());
                 out.add(item);
             }
         }
-        out.sort(Comparator.comparing((Map<String, Object> m) -> (String) m.get("scheduledAt"))
+        out.sort(Comparator.comparing((Map<String, Object> m) -> (Integer) m.get("phase"))
+                .thenComparing(m -> (String) m.get("scheduledAt"))
                 .thenComparing(m -> (String) m.get("medicineName")));
+        out.forEach(m -> m.remove("phase"));
         return ResponseEntity.ok(out);
     }
 
@@ -158,10 +159,24 @@ public class DoseController {
         return patient.map(pt -> prescriptions.findByPatientIdAndActiveTrue(pt.getId())).orElse(List.of());
     }
 
-    static String status(DoseLog log, Instant at, Instant now) {
+    // "now" is a window around the dose time, so a dose due in 20 minutes or taken late still shows as current
+    static final Duration NOW_BEFORE = Duration.ofMinutes(30);
+    static final Duration NOW_AFTER = Duration.ofHours(1);
+
+    /** 0 = now, 1 = upcoming, 2 = past; logged doses sort by time like the rest. */
+    public static int phase(Instant at, Instant now) {
+        if (at.isAfter(now.plus(NOW_BEFORE))) return 1;
+        if (now.isAfter(at.plus(NOW_AFTER))) return 2;
+        return 0;
+    }
+
+    public static String status(DoseLog log, Instant at, Instant now) {
         if (log != null && log.getStatus() != DoseStatus.PENDING) return log.getStatus().name();
-        if (at.isAfter(now)) return "UPCOMING";
-        return Duration.between(at, now).compareTo(Duration.ofHours(2)) > 0 ? "MISSED" : "DUE";
+        return switch (phase(at, now)) {
+            case 0 -> "NOW";
+            case 1 -> "UPCOMING";
+            default -> "PAST";
+        };
     }
 
     private static DoseStatus parseStatus(String s) {

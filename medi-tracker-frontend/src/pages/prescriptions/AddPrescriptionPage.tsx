@@ -21,6 +21,7 @@ import {
   ScheduleEntryDto,
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
+import Navbar from "../../components/ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 import { DOSAGE_UNITS, suggestDosageUnit } from "../../lib/dosageUnit";
 
@@ -163,6 +164,7 @@ export default function AddPrescriptionPage() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <Navbar />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={2} sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
@@ -267,7 +269,7 @@ export default function AddPrescriptionPage() {
 
             <Grid size={{ xs: 12 }}>
               <TextField
-                label="Notes (optional)"
+                label="Description (optional)"
                 placeholder="e.g. Take with food, an hour after waking up"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -275,7 +277,7 @@ export default function AddPrescriptionPage() {
                 error={notes.length > 500}
                 inputProps={{ maxLength: 500 }}
                 multiline
-                minRows={2}
+                minRows={5}
                 fullWidth
               />
             </Grid>

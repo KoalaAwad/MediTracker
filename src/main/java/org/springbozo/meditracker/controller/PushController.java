@@ -3,14 +3,12 @@ package org.springbozo.meditracker.controller;
 import org.springbozo.meditracker.model.PushSubscription;
 import org.springbozo.meditracker.model.User;
 import org.springbozo.meditracker.repository.PushSubscriptionRepository;
-import org.springbozo.meditracker.service.ReminderService;
 import org.springbozo.meditracker.service.UserService;
 import org.springbozo.meditracker.service.WebPushService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** Turning dose reminders on and off for a browser/device. */
@@ -23,14 +21,12 @@ public class PushController {
     private final UserService userService;
     private final PushSubscriptionRepository subscriptions;
     private final WebPushService push;
-    private final ReminderService reminders;
 
     public PushController(UserService userService, PushSubscriptionRepository subscriptions,
-                          WebPushService push, ReminderService reminders) {
+                          WebPushService push) {
         this.userService = userService;
         this.subscriptions = subscriptions;
         this.push = push;
-        this.reminders = reminders;
     }
 
     @GetMapping("/public-key")
@@ -72,19 +68,6 @@ public class PushController {
         return ResponseEntity.ok(Map.of("message", "Reminders are off for this device"));
     }
 
-    @PostMapping("/test")
-    public ResponseEntity<?> test(Authentication auth) {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("title", "Reminders are working");
-        payload.put("body", "You'll get a notification like this when a dose is due.");
-        payload.put("tag", "test");
-        payload.put("url", "/dashboard");
-        int sent = reminders.sendToUser(me(auth), payload);
-        if (sent == 0) {
-            return ResponseEntity.status(409).body(Map.of("error", "No device with reminders turned on could be reached"));
-        }
-        return ResponseEntity.ok(Map.of("sent", sent));
-    }
 
     private User me(Authentication auth) {
         return userService.findByEmail(auth.getName()).orElseThrow();
