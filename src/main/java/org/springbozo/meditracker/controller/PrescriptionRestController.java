@@ -1,6 +1,8 @@
 package org.springbozo.meditracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springbozo.meditracker.model.Prescription;
+import org.springbozo.meditracker.model.Medicine;
 import org.springbozo.meditracker.model.embedded.ScheduleEntry;
 import org.springbozo.meditracker.config.JwtUtil;
 import org.springbozo.meditracker.service.PrescriptionService;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/prescriptions")
 @CrossOrigin
@@ -58,8 +61,8 @@ public class PrescriptionRestController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to create prescription: " + e.getMessage()));
+            log.error("Failed to create prescription", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to create prescription"));
         }
     }
 
@@ -94,8 +97,8 @@ public class PrescriptionRestController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch prescriptions: " + e.getMessage()));
+            log.error("Failed to fetch prescriptions", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch prescriptions"));
         }
     }
 
@@ -131,8 +134,8 @@ public class PrescriptionRestController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to update prescription: " + e.getMessage()));
+            log.error("Failed to update prescription", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update prescription"));
         }
     }
 
@@ -164,8 +167,8 @@ public class PrescriptionRestController {
             return ResponseEntity.ok(Map.of("message", "Prescription deleted successfully"));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete prescription: " + e.getMessage()));
+            log.error("Failed to delete prescription", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to delete prescription"));
         }
     }
 
@@ -177,12 +180,15 @@ public class PrescriptionRestController {
 
         dto.setId(prescription.getId());
         dto.setMedicineId(prescription.getMedicine().getId());
-        dto.setMedicineName(prescription.getMedicine().getName());
+        // include the strength so "Prograf 1 mg" and "Prograf 5 mg" prescriptions are told apart
+        Medicine med = prescription.getMedicine();
+        dto.setMedicineName(med.getStrength() == null ? med.getName() : med.getName() + " " + med.getStrength());
         dto.setDosageAmount(prescription.getDosage().getAmount());
         dto.setDosageUnit(prescription.getDosage().getUnit().toString());
         dto.setStartDate(prescription.getStartDate().toString());
         dto.setEndDate(prescription.getEndDate() != null ? prescription.getEndDate().toString() : null);
         dto.setTimeZone(prescription.getTimeZone());
+        dto.setNotes(prescription.getNotes());
 
         // Convert schedule
         List<PrescriptionService.ScheduleEntryDto> scheduleDto = new ArrayList<>();

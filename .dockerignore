@@ -1,0 +1,4 @@
+# Backend image only needs pom.xml and src/
+*
+!pom.xml
+!src/

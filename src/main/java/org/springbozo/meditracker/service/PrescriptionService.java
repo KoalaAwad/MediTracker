@@ -69,6 +69,7 @@ public class PrescriptionService {
 
         // Set timezone
         prescription.setTimeZone(dto.getTimeZone());
+        prescription.setNotes(cleanNotes(dto.getNotes()));
 
         // Set schedule
         Set<ScheduleEntry> scheduleSet = new HashSet<>();
@@ -150,6 +151,7 @@ public class PrescriptionService {
         prescription.setStartDate(dto.getStartDate());
         prescription.setEndDate(dto.getEndDate());
         prescription.setTimeZone(dto.getTimeZone());
+        prescription.setNotes(cleanNotes(dto.getNotes()));
 
         // Update schedule
         Set<ScheduleEntry> scheduleSet = new HashSet<>();
@@ -164,6 +166,18 @@ public class PrescriptionService {
         return prescriptionRepository.save(prescription);
     }
 
+    public static final int NOTES_MAX = 500;
+
+    /** Trimmed, null when empty; too long is a 400 with a clear message. */
+    static String cleanNotes(String notes) {
+        if (notes == null || notes.isBlank()) return null;
+        String trimmed = notes.trim();
+        if (trimmed.length() > NOTES_MAX) {
+            throw new IllegalArgumentException("Notes must be " + NOTES_MAX + " characters or less");
+        }
+        return trimmed;
+    }
+
     // DTOs for request/response
     public static class PrescriptionCreateDto {
         private int medicineId;
@@ -172,6 +186,7 @@ public class PrescriptionService {
         private LocalDate endDate; // null = ongoing
         private String timeZone;
         private List<ScheduleEntryDto> schedule;
+        private String notes;
 
         // Getters and setters
         public int getMedicineId() { return medicineId; }
@@ -191,6 +206,8 @@ public class PrescriptionService {
 
         public List<ScheduleEntryDto> getSchedule() { return schedule; }
         public void setSchedule(List<ScheduleEntryDto> schedule) { this.schedule = schedule; }
+        public String getNotes() { return notes; }
+        public void setNotes(String notes) { this.notes = notes; }
     }
 
     public static class DosageDto {
@@ -250,6 +267,9 @@ public class PrescriptionService {
 
         public String getTimeZone() { return timeZone; }
         public void setTimeZone(String timeZone) { this.timeZone = timeZone; }
+        private String notes;
+        public String getNotes() { return notes; }
+        public void setNotes(String notes) { this.notes = notes; }
 
         public List<ScheduleEntryDto> getSchedule() { return schedule; }
         public void setSchedule(List<ScheduleEntryDto> schedule) { this.schedule = schedule; }

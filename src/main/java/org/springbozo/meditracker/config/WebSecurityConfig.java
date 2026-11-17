@@ -2,6 +2,7 @@ package org.springbozo.meditracker.config;
 
 import org.springbozo.meditracker.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,12 +45,15 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         return config.getAuthenticationManager();
     }
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow same-origin via nginx and dev server origins
+        // Allow the public site (same-origin via nginx) and the vite dev server
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost",
+                baseUrl,
                 "http://localhost:5173"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -78,7 +82,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(a ->
-                        a.requestMatchers("/api/auth/**", "/api/dashboard/welcome").permitAll()
+                        a.requestMatchers("/api/auth/**", "/api/dashboard/welcome", "/api/medicine-images/**", "/api/doses/quick").permitAll()
                                 .anyRequest().authenticated()
                 );
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

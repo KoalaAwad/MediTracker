@@ -62,19 +62,27 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
    cd MediTracker
    ```
 
-2. **Run the deployment script**
+2. **Create `deploy/.env`**
    ```bash
    cd deploy
-   ./deploy.sh
+   cp .env.example .env
    ```
+   Fill in at least `DB_PASSWORD`, `JWT_SECRET` (`openssl rand -hex 32`), `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
+   With `MAIL_HOST` left empty, verification and password reset links are printed to the backend log
+   (`docker compose logs backend`) instead of emailed.
 
-3. **Access the application**
-   - Frontend: [http://localhost](http://localhost) (port 80)
-   - Default Creds:
-       * Email: `admin@meditracker.com`
-       * Password: `password`
-   - Backend API: [http://localhost:8080/api](http://localhost:8080/api)
-   - Default 
+3. **Run the deployment script**
+   ```bash
+   ./deploy.sh                    # local
+   ./deploy.sh --profile tunnel   # also start the Cloudflare Tunnel (needs TUNNEL_TOKEN)
+   ```
+   For a real server (firewall, tunnel, nightly backups, restore) see [deploy/SERVER.md](deploy/SERVER.md).
+
+4. **Access the application**
+   - Site: [http://127.0.0.1:8081](http://127.0.0.1:8081) (only reachable from the machine itself)
+   - Log in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`. The admin is created on first start
+     if no admin exists.
+   - Postgres and the backend have no published ports; nginx proxies `/api` to the backend.
 
 ### What the deployment script does:
 1. Builds the Spring Boot backend (Maven)
@@ -93,11 +101,11 @@ These are some of the frameworks, libraries, or plugins used in the creation of 
 # Navigate to project root
 cd MediTracker
 
-# Build the backend
+# Build the backend (tests use an embedded Postgres, no Docker needed)
 mvn clean install
 
-# Run the application
-mvn spring-boot:run
+# Run the application - JWT_SECRET and DB_PASSWORD are required
+JWT_SECRET=$(openssl rand -hex 32) DB_PASSWORD=yourpassword APP_BASE_URL=http://localhost:5173 mvn spring-boot:run
 ```
 
 **Backend runs on:** `http://localhost:8080`
@@ -195,6 +203,11 @@ The application consists of 3 containers:
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login and receive JWT token
 - `GET /api/auth/me` - Get current user info
+- `DELETE /api/auth/me` - Delete your own account (body: `{password}`)
+- `POST /api/auth/verify-email`, `/resend-verification`, `/forgot-password`, `/reset-password` - Email links
+
+Login, register and the email-link endpoints are rate limited per IP (429 when exceeded),
+and an account locks for 15 minutes after 10 failed logins.
 
 ### Medicine Endpoints
 - `GET /api/medicine` - Get all medicines (paginated)
@@ -211,11 +224,9 @@ The application consists of 3 containers:
 ### Profile Endpoints
 - `GET /api/profile` - Get user profile
 - `PUT /api/profile/patient` - Update patient profile
-- `PUT /api/profile/doctor` - Update doctor profile
 
 ### Admin Endpoints
 - `GET /api/admin/users` - List all users
-- `PUT /api/admin/users/{id}/role` - Update user role
 - `DELETE /api/admin/users/{id}` - Delete user
 
 ---

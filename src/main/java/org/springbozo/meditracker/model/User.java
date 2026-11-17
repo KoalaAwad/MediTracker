@@ -29,6 +29,9 @@ public class User{
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
+
     @ManyToMany(fetch = FetchType.EAGER, targetEntity = Role.class)
     @JoinTable(name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),

@@ -15,17 +15,9 @@ import {
   Alert,
   IconButton,
   Snackbar,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { adminApi, UserDto } from "../../api/adminApi";
-import EditRoleDialog from "./EditRoleDialog";
 import DeleteUserDialog from "./DeleteUserDialog";
 import Loading from "../ui/Loading";
 import Navbar from "../ui/Navbar";
@@ -36,26 +28,12 @@ export default function UsersList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserDto | null>(null);
-  const [roles, setRoles] = useState<string[]>([]);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [onlyRole, setOnlyRole] = useState(false);
   const navigate = useNavigate();
   const token = useAuthStore((s) => s.token);
 
-  const fetchRoles = async () => {
-    try {
-      const res = await adminApi.getAvailableRoles(token);
-      setRoles(res.data.roles);
-    } catch (err: any) {
-      // ignore silently or setError
-      console.error("Failed to load roles", err);
-    }
-  };
-
-  const fetchUsers = async (role?: string | null, only?: boolean) => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
       if (!token) {
@@ -63,13 +41,7 @@ export default function UsersList() {
         return;
       }
 
-      console.debug("fetchUsers called with", { role, only });
-      const response = await adminApi.getAllUsers(token, role, only);
-      console.debug("adminApi.getAllUsers response", {
-        params: response.config.params,
-        url: response.request?.responseURL,
-        count: response.data?.users?.length,
-      });
+      const response = await adminApi.getAllUsers(token);
       setUsers(response.data.users);
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -85,38 +57,13 @@ export default function UsersList() {
   };
 
   useEffect(() => {
-    fetchRoles();
-    fetchUsers(selectedRole, onlyRole);
+    fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
-
-  useEffect(() => {
-    // when filters change, refetch
-    fetchUsers(selectedRole, onlyRole);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRole, onlyRole]);
-
-  const handleEditClick = (user: UserDto) => {
-    setSelectedUser(user);
-    setEditDialogOpen(true);
-  };
 
   const handleDeleteClick = (user: UserDto) => {
     setSelectedUser(user);
     setDeleteDialogOpen(true);
-  };
-
-  const handleEditSave = async (userId: number, roles: string[]) => {
-    try {
-      if (!token) return;
-
-      await adminApi.updateUserRoles(token, { userId, roles });
-      setSuccessMessage("User roles updated successfully");
-      setEditDialogOpen(false);
-      fetchUsers(selectedRole, onlyRole);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to update user roles");
-    }
   };
 
   const handleDeleteConfirm = async (userId: number) => {
@@ -126,7 +73,7 @@ export default function UsersList() {
       await adminApi.deleteUser(token, userId);
       setSuccessMessage("User deleted successfully");
       setDeleteDialogOpen(false);
-      fetchUsers(selectedRole, onlyRole);
+      fetchUsers();
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to delete user");
     }
@@ -151,37 +98,6 @@ export default function UsersList() {
               {error}
             </Alert>
           )}
-
-          {/* Filters: role dropdown + only checkbox */}
-          <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel id="role-select-label">Filter by role</InputLabel>
-              <Select
-                labelId="role-select-label"
-                value={selectedRole || ""}
-                label="Filter by role"
-                onChange={(e) => setSelectedRole(e.target.value || null)}
-                size="small"
-              >
-                <MenuItem value="">All</MenuItem>
-                {roles.map((r) => (
-                  <MenuItem key={r} value={r}>
-                    {r}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={onlyRole}
-                  onChange={(e) => setOnlyRole(e.target.checked)}
-                />
-              }
-              label="Only users with this role"
-            />
-          </Box>
 
           <TableContainer>
             <Table>
@@ -220,18 +136,11 @@ export default function UsersList() {
                       <TableCell>{user.userId}</TableCell>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.role}</TableCell>
+                      <TableCell>{user.role.includes("ADMIN") ? "Admin" : "User"}</TableCell>
                       <TableCell>
                         {new Date(user.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell align="right">
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleEditClick(user)}
-                          title="Edit roles"
-                        >
-                          <EditIcon />
-                        </IconButton>
                         <IconButton
                           color="error"
                           onClick={() => handleDeleteClick(user)}
@@ -250,13 +159,6 @@ export default function UsersList() {
           {loading && <Loading fullScreen={false} label="Loading users..." />}
         </Paper>
       </Container>
-
-      <EditRoleDialog
-        open={editDialogOpen}
-        user={selectedUser}
-        onClose={() => setEditDialogOpen(false)}
-        onSave={handleEditSave}
-      />
 
       <DeleteUserDialog
         open={deleteDialogOpen}

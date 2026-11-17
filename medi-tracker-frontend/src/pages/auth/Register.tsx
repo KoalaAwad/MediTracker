@@ -1,12 +1,9 @@
-import { Box, CssBaseline, ThemeProvider } from "@mui/material";
-import { getTheme } from "../../lib/theme";
+import { Box } from "@mui/material";
 import RegisterForm from "../../components/auth/RegisterForm";
 
 export default function RegisterPage() {
-  const lightTheme = getTheme('light');
 
   return (
-    <ThemeProvider theme={lightTheme}>
       <Box
         sx={{
           width: "100%",
@@ -18,9 +15,7 @@ export default function RegisterPage() {
           px: 2,
         }}
       >
-        <CssBaseline />
         <RegisterForm />
       </Box>
-    </ThemeProvider>
   );
 }

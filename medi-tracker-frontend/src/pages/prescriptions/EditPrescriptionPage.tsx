@@ -22,7 +22,10 @@ import {
   PrescriptionDto,
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
+import Navbar from "../../components/ui/Navbar";
+import TimeField12 from "../../components/ui/TimeField12";
 import { useAuthStore } from "../../zustand/authStore";
+import { DOSAGE_UNITS } from "../../lib/dosageUnit";
 
 export default function EditPrescriptionPage() {
   const { id } = useParams();
@@ -39,6 +42,7 @@ export default function EditPrescriptionPage() {
 
   const [dosageAmount, setDosageAmount] = useState<number>(1);
   const [dosageUnit, setDosageUnit] = useState<string>("TABLET");
+  const [notes, setNotes] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isOngoing, setIsOngoing] = useState<boolean>(false);
@@ -51,14 +55,14 @@ export default function EditPrescriptionPage() {
   const [dailyFlags, setDailyFlags] = useState<boolean[]>([false]);
 
   const role = useAuthStore((s) => s.user?.role || "");
-  const isPatient = role.includes("PATIENT");
+  const isUser = role.includes("USER");
   const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
-    if (!isPatient) {
+    if (!isUser) {
       navigate("/unauthorized");
     }
-  }, [isPatient, navigate]);
+  }, [isUser, navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,6 +83,7 @@ export default function EditPrescriptionPage() {
         setEndDate(prescriptionFromState.endDate || "");
         setIsOngoing(!prescriptionFromState.endDate);
         setTimeZone(prescriptionFromState.timeZone);
+        setNotes(prescriptionFromState.notes || "");
 
         // Set schedule (collapse daily entries)
         const uniqueSchedule = collapseDailyEntries(prescriptionFromState.schedule);
@@ -182,6 +187,7 @@ export default function EditPrescriptionPage() {
         endDate: isOngoing ? undefined : (endDate || undefined),
         timeZone,
         schedule: expandedSchedule,
+        notes: notes.trim() || undefined,
       };
 
       await prescriptionApi.update(token, prescriptionId, dto);
@@ -195,6 +201,7 @@ export default function EditPrescriptionPage() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <Navbar />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={2} sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
@@ -219,7 +226,7 @@ export default function EditPrescriptionPage() {
           )}
 
           <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 label="Dosage amount"
                 type="number"
@@ -228,7 +235,7 @@ export default function EditPrescriptionPage() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 select
                 label="Dosage unit"
@@ -236,24 +243,15 @@ export default function EditPrescriptionPage() {
                 onChange={(e) => setDosageUnit(e.target.value)}
                 fullWidth
               >
-                {[
-                  "TABLET",
-                  "CAPSULE",
-                  "PUFF",
-                  "DROP",
-                  "PATCH",
-                  "ML",
-                  "MG",
-                  "MCG",
-                ].map((u) => (
-                  <MenuItem key={u} value={u}>
-                    {u}
+                {DOSAGE_UNITS.map((u) => (
+                  <MenuItem key={u.value} value={u.value}>
+                    {u.label}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 label="Start date"
                 type="date"
@@ -263,7 +261,7 @@ export default function EditPrescriptionPage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
                 <TextField
                   label="End date"
@@ -293,7 +291,22 @@ export default function EditPrescriptionPage() {
               </Box>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Description (optional)"
+                placeholder="e.g. Take with food, an hour after waking up"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                helperText={`Shown on your prescription list and in reminders. ${notes.length}/500`}
+                error={notes.length > 500}
+                inputProps={{ maxLength: 500 }}
+                multiline
+                minRows={5}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Time zone"
                 value={timeZone}
@@ -302,7 +315,7 @@ export default function EditPrescriptionPage() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Schedule entries
               </Typography>
@@ -328,20 +341,15 @@ export default function EditPrescriptionPage() {
                         "SUNDAY",
                       ].map((d) => (
                         <MenuItem key={d} value={d}>
-                          {d}
+                          {d.charAt(0) + d.slice(1).toLowerCase()}
                         </MenuItem>
                       ))}
                     </TextField>
                   )}
-                  <TextField
-                    label="Time of day"
-                    type="time"
+                  <TimeField12
+                    label="Time"
                     value={row.timeOfDay}
-                    onChange={(e) =>
-                      updateScheduleRow(i, "timeOfDay", e.target.value)
-                    }
-                    sx={{ minWidth: 160 }}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => updateScheduleRow(i, "timeOfDay", v)}
                   />
                   <FormControlLabel
                     control={

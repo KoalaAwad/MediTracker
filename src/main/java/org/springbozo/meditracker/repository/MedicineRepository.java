@@ -5,11 +5,12 @@ import org.springbozo.meditracker.model.Medicine;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @Repository
 public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
@@ -23,16 +24,9 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
     // Pagination: list only active medicines paged
     Page<Medicine> findByActiveTrue(Pageable pageable);
 
-    // Simple search by medicine name or generic name (case-insensitive)
-    Page<Medicine> findByActiveTrueAndNameContainingIgnoreCaseOrActiveTrueAndGenericNameContainingIgnoreCase(
-            String nameQuery, Pageable pageable, String genericQuery);
+    long countByActiveTrue();
 
-    // Check if medicine exists by name (for deduplication during import)
-    boolean existsByNameIgnoreCase(String name);
-
-    // Check if medicine exists by name AND manufacturer (more precise deduplication)
-    boolean existsByNameIgnoreCaseAndManufacturerIgnoreCase(String name, String manufacturer);
-
-    // Check if medicine exists by name when manufacturer is null
-    boolean existsByNameIgnoreCaseAndManufacturerIsNull(String name);
+    // Substring search on brand or generic name; lower(...) LIKE uses the pg_trgm indexes from V5
+    @Query("select m from Medicine m where m.active = true and (lower(m.name) like :q or lower(m.genericName) like :q)")
+    Page<Medicine> search(@Param("q") String likePattern, Pageable pageable);
 }

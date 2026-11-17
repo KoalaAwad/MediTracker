@@ -3,6 +3,9 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import VerifyEmail from './pages/auth/VerifyEmail';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/profile/DashboardPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import UsersPage from './pages/admin/UsersPage';
@@ -13,6 +16,7 @@ import Unauthorized from './pages/Unauthorized';
 import { useEffect } from 'react';
 import { useAuthStore } from './zustand/authStore';
 import { useThemeStore } from './zustand/themeStore';
+import { syncSubscription } from './lib/push';
 import { getTheme } from './lib/theme';
 import Loading from './components/ui/Loading';
 import AddPrescriptionPage from './pages/prescriptions/AddPrescriptionPage';
@@ -46,6 +50,12 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
                 init();
               }, [init]);
 
+              // keep this device's reminder subscription pointed at whoever is signed in
+              const token = useAuthStore((s) => s.token);
+              useEffect(() => {
+                if (token) syncSubscription(token);
+              }, [token]);
+
               const theme = getTheme(themeMode);
 
               return (
@@ -59,6 +69,9 @@ import UpdateMedicineDatabasePage from './pages/medicine/UpdateMedicineDatabaseP
                       <Routes>
                         <Route path="/login" element={<Login />} />
                       <Route path="/register" element={<Register />} />
+                      <Route path="/verify-email" element={<VerifyEmail />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/unauthorized" element={<Unauthorized />} />
 
                       <Route

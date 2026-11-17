@@ -22,6 +22,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { prescriptionApi, PrescriptionDto } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
 import Navbar from "../../components/ui/Navbar";
+import { to12h } from "../../lib/time";
 import { useNavigate } from "react-router-dom";
 import { PrimaryButton } from "../../components/ui/StyledButton";
 import { useAuthStore } from "../../zustand/authStore";
@@ -85,15 +86,16 @@ export default function MyPrescriptionsPage() {
     });
 
     const formatted: string[] = [];
-    byTime.forEach((days, time) => {
+    // earliest time first; "HH:mm" sorts correctly as text
+    [...byTime.entries()].sort(([a], [b]) => a.localeCompare(b)).forEach(([time, days]) => {
       const dayOrder = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
       const sortedDays = days.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
 
       if (sortedDays.length === 7) {
-        formatted.push(`Daily at ${time}`);
+        formatted.push(`Daily at ${to12h(time)}`);
       } else {
-        const shortDays = sortedDays.map(d => d.substring(0, 3));
-        formatted.push(`${shortDays.join(", ")} at ${time}`);
+        const shortDays = sortedDays.map(d => d.charAt(0) + d.substring(1, 3).toLowerCase());
+        formatted.push(`${shortDays.join(", ")} at ${to12h(time)}`);
       }
     });
 
@@ -139,8 +141,25 @@ export default function MyPrescriptionsPage() {
                 {prescription.medicineName}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                {prescription.dosageAmount} {prescription.dosageUnit}
+                {prescription.dosageAmount} {prescription.dosageUnit.toLowerCase()}
               </Typography>
+              {prescription.notes && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1,
+                    px: 1.5,
+                    py: 1,
+                    borderLeft: 3,
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                    borderRadius: 1,
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {prescription.notes}
+                </Typography>
+              )}
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               {expired ? (

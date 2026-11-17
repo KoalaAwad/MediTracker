@@ -13,24 +13,12 @@ export interface PatientProfileDto {
   active: boolean;
 }
 
-export interface DoctorProfileDto {
-  id: number;
-  firstName?: string;
-  lastName?: string;
-  specialization?: string;
-  licenseNumber?: string;
-  phone?: string;
-  clinicAddress?: string;
-  active: boolean;
-}
-
 export interface ProfileDto {
   userId: number;
   email: string;
   name: string;
   roles: string[];
   patientProfile?: PatientProfileDto;
-  doctorProfile?: DoctorProfileDto;
 }
 
 export const profileApi = {
@@ -47,12 +35,4 @@ export const profileApi = {
         Authorization: `Bearer ${token}`,
       },
     }),
-
-  updateDoctorProfile: (token: string, dto: DoctorProfileDto) =>
-    axiosClient.put("/auth/profile/doctor", dto, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }),
 };
-

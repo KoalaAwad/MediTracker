@@ -21,7 +21,10 @@ import {
   ScheduleEntryDto,
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
+import Navbar from "../../components/ui/Navbar";
+import TimeField12 from "../../components/ui/TimeField12";
 import { useAuthStore } from "../../zustand/authStore";
+import { DOSAGE_UNITS, suggestDosageUnit } from "../../lib/dosageUnit";
 
 export default function AddPrescriptionPage() {
   const { id } = useParams();
@@ -34,6 +37,8 @@ export default function AddPrescriptionPage() {
 
   const [dosageAmount, setDosageAmount] = useState<number>(1);
   const [dosageUnit, setDosageUnit] = useState<string>("TABLET");
+  const [unitFromMedicine, setUnitFromMedicine] = useState(false);
+  const [notes, setNotes] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isOngoing, setIsOngoing] = useState<boolean>(false); // Track if prescription is ongoing/indefinite
@@ -48,14 +53,14 @@ export default function AddPrescriptionPage() {
   const [dailyFlags, setDailyFlags] = useState<boolean[]>([false]);
 
   const role = useAuthStore((s) => s.user?.role || "");
-  const isPatient = role.includes("PATIENT");
+  const isUser = role.includes("USER");
   const token = useAuthStore((s) => s.token);
 
   useEffect(() => {
-    if (!isPatient) {
+    if (!isUser) {
       navigate("/unauthorized");
     }
-  }, [isPatient, navigate]);
+  }, [isUser, navigate]);
 
   useEffect(() => {
     const fetchMedicine = async () => {
@@ -66,6 +71,12 @@ export default function AddPrescriptionPage() {
         }
         const res = await medicineApi.getById(medicineId, token);
         setMedicine(res.data);
+        // capsule, tablet, ml... follows from the medicine's FDA dosage form
+        const unit = suggestDosageUnit(res.data.dosageForm, res.data.route);
+        if (unit) {
+          setDosageUnit(unit);
+          setUnitFromMedicine(true);
+        }
       } catch (err: any) {
         setError(err.response?.data?.error || "Failed to load medicine");
       } finally {
@@ -140,6 +151,7 @@ export default function AddPrescriptionPage() {
         endDate: isOngoing ? undefined : (endDate || undefined), // Ongoing = no end date
         timeZone,
         schedule: expandedSchedule,
+        notes: notes.trim() || undefined,
       };
 
       await prescriptionApi.createForMe(token, dto);
@@ -153,6 +165,7 @@ export default function AddPrescriptionPage() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <Navbar />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={2} sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
@@ -172,12 +185,21 @@ export default function AddPrescriptionPage() {
           {medicine && (
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1">Medicine</Typography>
-              <Typography>{medicine.name}</Typography>
+              <Typography sx={{ fontWeight: 600 }}>
+                {medicine.name}
+                {medicine.strength ? ` ${medicine.strength}` : ""}
+              </Typography>
+              {medicine.dosageForm && (
+                <Typography variant="body2" color="text.secondary">
+                  {medicine.dosageForm.charAt(0) + medicine.dosageForm.slice(1).toLowerCase()}
+                  {medicine.manufacturer ? ` · ${medicine.manufacturer}` : ""}
+                </Typography>
+              )}
             </Box>
           )}
 
           <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 label="Dosage amount"
                 type="number"
@@ -186,32 +208,27 @@ export default function AddPrescriptionPage() {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 select
                 label="Dosage unit"
                 value={dosageUnit}
-                onChange={(e) => setDosageUnit(e.target.value)}
+                onChange={(e) => {
+                  setDosageUnit(e.target.value);
+                  setUnitFromMedicine(false);
+                }}
+                helperText={unitFromMedicine ? "Picked from the medicine's form. Change it if needed." : " "}
                 fullWidth
               >
-                {[
-                  "TABLET",
-                  "CAPSULE",
-                  "PUFF",
-                  "DROP",
-                  "PATCH",
-                  "ML",
-                  "MG",
-                  "MCG",
-                ].map((u) => (
-                  <MenuItem key={u} value={u}>
-                    {u}
+                {DOSAGE_UNITS.map((u) => (
+                  <MenuItem key={u.value} value={u.value}>
+                    {u.label}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
 
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <TextField
                 label="Start date"
                 type="date"
@@ -221,7 +238,7 @@ export default function AddPrescriptionPage() {
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
                 <TextField
                   label="End date"
@@ -251,7 +268,22 @@ export default function AddPrescriptionPage() {
               </Box>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label="Description (optional)"
+                placeholder="e.g. Take with food, an hour after waking up"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                helperText={`Shown on your prescription list and in reminders. ${notes.length}/500`}
+                error={notes.length > 500}
+                inputProps={{ maxLength: 500 }}
+                multiline
+                minRows={5}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Time zone"
                 value={timeZone}
@@ -260,7 +292,7 @@ export default function AddPrescriptionPage() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Schedule entries
               </Typography>
@@ -286,20 +318,15 @@ export default function AddPrescriptionPage() {
                         "SUNDAY",
                       ].map((d) => (
                         <MenuItem key={d} value={d}>
-                          {d}
+                          {d.charAt(0) + d.slice(1).toLowerCase()}
                         </MenuItem>
                       ))}
                     </TextField>
                   )}
-                  <TextField
-                    label="Time of day"
-                    type="time"
+                  <TimeField12
+                    label="Time"
                     value={row.timeOfDay}
-                    onChange={(e) =>
-                      updateScheduleRow(i, "timeOfDay", e.target.value)
-                    }
-                    sx={{ minWidth: 160 }}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => updateScheduleRow(i, "timeOfDay", v)}
                   />
                   <FormControlLabel
                     control={

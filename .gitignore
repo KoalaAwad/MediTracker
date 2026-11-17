@@ -75,5 +75,5 @@ Thumbs.db
 ### Database Backups (if sensitive) ###
 # Uncomment if you don't want to track database backups
 # db-backup/*.sql
-# deploy/db-backup/*.sql
+deploy/db-backup/
 

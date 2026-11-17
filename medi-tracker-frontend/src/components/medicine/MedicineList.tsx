@@ -25,12 +25,18 @@ import Navbar from "../ui/Navbar";
 import { useAuthStore } from "../../zustand/authStore";
 import { PrimaryButton } from "../ui/StyledButton";
 
-interface MedicineListProps {
-  isAdmin: boolean;
-  isDoctor: boolean;
+// "CAPSULE, GELATIN COATED" -> "Capsule, gelatin coated"
+function formatForm(form?: string) {
+  if (!form) return "—";
+  const lower = form.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
+interface MedicineListProps {
+  isAdmin: boolean;
+}
+
+export default function MedicineList({ isAdmin }: MedicineListProps) {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,10 +47,12 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
   const [page, setPage] = useState<number>(1);
   const [size, setSize] = useState<number>(20);
   const [totalPages, setTotalPages] = useState<number>(0);
+  const [totalElements, setTotalElements] = useState<number>(0);
+  const [loaded, setLoaded] = useState(false);
   const navigate = useNavigate();
   const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.user?.role || "");
-  const isPatient = role.includes("PATIENT");
+  const isUser = role.includes("USER");
 
   const fetchMedicines = async (p = page, s = size, q = search) => {
     try {
@@ -59,6 +67,8 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
       setPage(response.data.page + 1);
       setSize(response.data.size);
       setTotalPages(response.data.totalPages);
+      setTotalElements(response.data.totalElements);
+      setLoaded(true);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to load medicines");
     } finally {
@@ -98,7 +108,8 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
     fetchMedicines(value, size, search);
   };
 
-  if (loading) return <Loading />;
+  // full-page spinner only on first load, so searching keeps the box and its focus
+  if (loading && !loaded) return <Loading />;
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -127,14 +138,21 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             <TextField
               label="Search medicines"
-              placeholder="Type medicine name..."
+              placeholder="Brand or generic name, e.g. Prograf or tacrolimus"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
               size="small"
               fullWidth
             />
             <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
           </Box>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {loading ? "Searching..." : `${totalElements.toLocaleString()} medicine${totalElements === 1 ? "" : "s"}`}
+          </Typography>
 
           {error && (
             <Alert
@@ -151,16 +169,19 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               <TableHead>
                 <TableRow>
                   <TableCell>
-                    <strong>Brand Name</strong>
+                    <strong>Name</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Strength</strong>
+                  </TableCell>
+                  <TableCell>
+                    <strong>Form</strong>
                   </TableCell>
                   <TableCell>
                     <strong>Generic Name</strong>
                   </TableCell>
                   <TableCell>
                     <strong>Manufacturer</strong>
-                  </TableCell>
-                  <TableCell>
-                    <strong>Pharm Class</strong>
                   </TableCell>
                   <TableCell align="right">
                     <strong>Actions</strong>
@@ -170,58 +191,57 @@ export default function MedicineList({ isAdmin, isDoctor }: MedicineListProps) {
               <TableBody>
                 {medicines.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={6} align="center">
                       No medicines found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  medicines.map((medicine) => {
-                    const pharmClass = medicine.openfda?.pharm_class_epc?.[0] ||
-                                      medicine.openfda?.pharm_class_moa?.[0] ||
-                                      "N/A";
-
-                    return (
-                      <TableRow key={medicine.id}>
-                        <TableCell>{medicine.name}</TableCell>
-                        <TableCell>{medicine.genericName || "N/A"}</TableCell>
-                        <TableCell>{medicine.manufacturer || "N/A"}</TableCell>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
-                            {pharmClass}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              gap: 1,
-                              justifyContent: "flex-end",
-                            }}
-                          >
-                            {isAdmin && (
-                              <IconButton
-                                color="error"
-                                onClick={() => handleDeleteClick(medicine)}
-                                title="Delete medicine"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            )}
-                            {isPatient && (
-                              <PrimaryButton
-                                size="small"
-                                onClick={() =>
-                                  navigate(`/prescriptions/add/${medicine.id}`)
-                                }
-                              >
-                                + Add prescription
-                              </PrimaryButton>
-                            )}
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                  medicines.map((medicine) => (
+                    <TableRow
+                      key={medicine.id}
+                      hover
+                      onClick={() => navigate(`/medicine/view/${medicine.id}`)}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      <TableCell sx={{ fontWeight: 600 }}>{medicine.name}</TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>{medicine.strength || "—"}</TableCell>
+                      <TableCell>{formatForm(medicine.dosageForm)}</TableCell>
+                      <TableCell>{medicine.genericName || "—"}</TableCell>
+                      <TableCell>{medicine.manufacturer || "—"}</TableCell>
+                      <TableCell align="right">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            justifyContent: "flex-end",
+                          }}
+                          // the buttons shouldn't also open the details page
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {isAdmin && (
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteClick(medicine)}
+                              title="Delete medicine"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+                          {isUser && (
+                            <PrimaryButton
+                              size="small"
+                              sx={{ whiteSpace: "nowrap" }}
+                              onClick={() =>
+                                navigate(`/prescriptions/add/${medicine.id}`)
+                              }
+                            >
+                              + Add
+                            </PrimaryButton>
+                          )}
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>

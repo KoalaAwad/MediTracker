@@ -44,7 +44,7 @@ export default function PatientProfileSection({
     <Card sx={{ mb: 3 }}>
       <CardContent>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Typography variant="h6">Patient Information</Typography>
+          <Typography variant="h6">Health information</Typography>
           {!isEditing ? (
             <Button variant="outlined" onClick={() => setIsEditing(true)}>
               Edit
@@ -75,7 +75,7 @@ export default function PatientProfileSection({
         <Grid container spacing={2}>
           {isEditing ? (
             <>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Name"
@@ -85,7 +85,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Gender"
@@ -95,7 +95,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Date of Birth"
@@ -107,7 +107,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Phone"
@@ -117,7 +117,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Address"
@@ -127,7 +127,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Blood Type"
@@ -137,7 +137,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Allergies"
@@ -147,7 +147,7 @@ export default function PatientProfileSection({
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="Medical History"
@@ -162,53 +162,53 @@ export default function PatientProfileSection({
             </>
           ) : (
             <>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Name
                 </Typography>
-                <Typography>{formData.name || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.name}</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Gender
                 </Typography>
-                <Typography>{formData.gender || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.gender}</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Date of Birth
                 </Typography>
-                <Typography>{formData.dateOfBirth || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.dateOfBirth}</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Phone
                 </Typography>
-                <Typography>{formData.phone || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.phone}</Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Address
                 </Typography>
-                <Typography>{formData.address || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.address}</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Blood Type
                 </Typography>
-                <Typography>{formData.bloodType || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.bloodType}</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Allergies
                 </Typography>
-                <Typography>{formData.allergies || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.allergies}</Typography>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" color="textSecondary">
                   Medical History
                 </Typography>
-                <Typography>{formData.medicalHistory || "N/A"}</Typography>
+                <Typography sx={{ minHeight: "1.5em" }}>{formData.medicalHistory}</Typography>
               </Grid>
             </>
           )}
