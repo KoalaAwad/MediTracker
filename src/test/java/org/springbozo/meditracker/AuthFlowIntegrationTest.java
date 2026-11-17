@@ -239,6 +239,23 @@ class AuthFlowIntegrationTest {
     }
 
     @Test
+    void siteWideLimitPerIpAndTighterLimitOnLabelImages() throws Exception {
+        // 300 API calls a minute is fine, the 301st is refused; another IP is unaffected
+        for (int i = 0; i < 300; i++) {
+            mvc.perform(get("/api/auth/me").header("X-Real-IP", "198.18.0.1"));
+        }
+        mvc.perform(get("/api/auth/me").header("X-Real-IP", "198.18.0.1")).andExpect(status().isTooManyRequests());
+        mvc.perform(get("/api/auth/me").header("X-Real-IP", "198.18.0.2")).andExpect(status().isBadRequest());
+
+        for (int i = 0; i < 60; i++) {
+            mvc.perform(get("/api/medicine-images/not-a-set-id/x.jpg").header("X-Real-IP", "198.18.0.3"))
+                    .andExpect(status().isNotFound());
+        }
+        mvc.perform(get("/api/medicine-images/not-a-set-id/x.jpg").header("X-Real-IP", "198.18.0.3"))
+                .andExpect(status().isTooManyRequests());
+    }
+
+    @Test
     void perAccountLockoutAfterFailedLogins() throws Exception {
         String email = "locked@example.com";
         verifiedLogin(email, "right-password");

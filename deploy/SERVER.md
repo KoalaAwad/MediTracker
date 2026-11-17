@@ -81,3 +81,38 @@ crontab -e
 
 For an R2 copy, download the `.dump` from the bucket into `db-backup/` first.
 Test a restore once before you rely on the backups.
+
+## Hosting on your own Windows computer instead
+
+Steps 2-4 are the same (run them in WSL). Skip step 1 and do this instead.
+
+**What's exposed.** The tunnel connects *out* from your computer to Cloudflare; nothing on the
+internet can connect *in*, no router ports are opened and your home IP stays hidden. Only the
+site at `127.0.0.1:8081` is reachable, through Cloudflare. Inside, the backend runs as a normal
+user, no container can gain extra privileges, and the app has its own rate limits.
+
+**Docker Desktop settings**
+- General → **Start Docker Desktop when you sign in**: on. Otherwise the site and reminders stop
+  after every restart.
+- General → **Expose daemon on tcp://localhost:2375 without TLS**: must stay **off**.
+
+**Windows settings**
+- Settings → System → Power: when plugged in, **never sleep**. A sleeping computer sends no
+  reminders. (The screen can still turn off.)
+- Keep Windows Update and Docker Desktop updated.
+
+**Cloudflare dashboard (koala.rip)** — all free
+- SSL/TLS → Edge Certificates → **Always Use HTTPS**: on.
+- Security → Bots → **Bot Fight Mode**: on.
+- Security → WAF → Rate limiting rules → create one rule: *URI Path starts with `/api/auth/`*,
+  *50 requests per 10 seconds* per IP, action *Block* for 10 seconds. This stops floods before
+  they reach your computer; the app's own limits are the second line.
+
+**Backups.** WSL's cron only runs while WSL is open, so schedule `backup.sh` with Windows Task
+Scheduler instead: Create Basic Task → Daily, 3:00 AM → Start a program `wsl.exe` with
+arguments `-d ubuntu -- /home/YOU/Project/MediTracker/deploy/backup.sh`. Set up R2 (step 4):
+a laptop's disk is the copy most likely to be lost.
+
+**Who can sign up.** Anyone who finds the site can register (verified by email, 5 sign-ups per
+hour per IP, and Resend's free plan caps emails at 100 a day). If it's only for you and a few
+people, ask for invite-only registration.

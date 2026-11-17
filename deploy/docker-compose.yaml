@@ -12,6 +12,8 @@ services:
     image: postgres:16.10-alpine3.22
     container_name: meditracker-db
     restart: unless-stopped
+    # a compromised process can't gain more privileges (e.g. via setuid binaries)
+    security_opt: ["no-new-privileges:true"]
     logging: *logging
     environment:
       POSTGRES_DB: meditracker
@@ -34,6 +36,8 @@ services:
       dockerfile: Dockerfile
     container_name: meditracker-backend
     restart: unless-stopped
+    # a compromised process can't gain more privileges (e.g. via setuid binaries)
+    security_opt: ["no-new-privileges:true"]
     logging: *logging
     env_file: .env
     environment:
@@ -52,6 +56,8 @@ services:
       dockerfile: Dockerfile
     container_name: meditracker-frontend
     restart: unless-stopped
+    # a compromised process can't gain more privileges (e.g. via setuid binaries)
+    security_opt: ["no-new-privileges:true"]
     logging: *logging
     ports:
       # localhost only; the public gets in through the Cloudflare Tunnel
@@ -66,6 +72,8 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: meditracker-tunnel
     restart: unless-stopped
+    # a compromised process can't gain more privileges (e.g. via setuid binaries)
+    security_opt: ["no-new-privileges:true"]
     logging: *logging
     profiles: ["tunnel"]
     command: tunnel --no-autoupdate run

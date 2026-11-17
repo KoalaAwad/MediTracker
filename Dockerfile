@@ -23,6 +23,10 @@ WORKDIR /app
 # Copy jar from build stage
 COPY --from=build /app/target/*FULL.jar app.jar
 
+# run as an ordinary user, not root
+RUN addgroup -S app && adduser -S -G app app
+USER app
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
