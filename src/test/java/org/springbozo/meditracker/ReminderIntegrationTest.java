@@ -147,7 +147,7 @@ class ReminderIntegrationTest {
         List<JsonNode> sent = sentPayloads();
         assertThat(sent).hasSize(1);
         assertThat(sent.get(0).get("title").asText()).isEqualTo("Time for Prograf 1 mg");
-        assertThat(sent.get(0).get("body").asText()).isEqualTo("Take 1 capsule · 08:00");
+        assertThat(sent.get(0).get("body").asText()).isEqualTo("Take 1 capsule · 8:00 AM");
 
         reminders.tick(eightAm.plus(Duration.ofMinutes(31)));
         reminders.tick(eightAm.plus(Duration.ofMinutes(32)));
@@ -171,7 +171,7 @@ class ReminderIntegrationTest {
         assertThat(sentPayloads()).hasSize(1);
         mvc.perform(get("/api/doses/today").header("Authorization", "Bearer " + token))
                 .andExpect(jsonPath("$[0].status").value("TAKEN"))
-                .andExpect(jsonPath("$[0].localTime").value("08:00"))
+                .andExpect(jsonPath("$[0].localTime").value("8:00 AM"))
                 .andExpect(jsonPath("$[0].dosage").value("1 capsule"));
     }
 
@@ -198,7 +198,7 @@ class ReminderIntegrationTest {
 
         reminders.tick(eightAm.plusSeconds(30));
         assertThat(sentPayloads().get(0).get("body").asText())
-                .isEqualTo("Take 2 tablets · 08:00\nTake with food, an hour after waking");
+                .isEqualTo("Take 2 tablets · 8:00 AM\nTake with food, an hour after waking");
     }
 
     @Test

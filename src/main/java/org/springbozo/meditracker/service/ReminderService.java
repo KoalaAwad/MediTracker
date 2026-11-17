@@ -38,7 +38,8 @@ public class ReminderService {
     // after this a dose counts as missed and gets no more notifications
     static final Duration MISSED_AFTER = Duration.ofHours(2);
     private static final Duration ACTION_TOKEN_VALID = Duration.ofHours(24);
-    private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
+    // 12-hour clock, e.g. "8:00 AM"
+    private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("h:mm a", java.util.Locale.US);
 
     public record Due(Prescription prescription, Instant scheduledAt) {}
 

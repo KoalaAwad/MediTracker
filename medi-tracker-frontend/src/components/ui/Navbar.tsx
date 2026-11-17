@@ -35,9 +35,9 @@ export default function Navbar() {
 
   const isAdmin = user?.role.includes("ADMIN") ?? false;
   const links: NavLink[] = [
-    { label: "Today", to: "/dashboard", match: ["/dashboard"] },
+    { label: "Home", to: "/dashboard", match: ["/dashboard"] },
     { label: "Medicines", to: "/medicine", match: ["/medicine"] },
-    { label: "My prescriptions", to: "/prescriptions", match: ["/prescriptions"] },
+    { label: "Prescriptions", to: "/prescriptions", match: ["/prescriptions"] },
     ...(isAdmin ? [{ label: "Users", to: "/admin/users", match: ["/admin"] }] : []),
   ];
   const isActive = (link: NavLink) => link.match.some((m) => pathname === m || pathname.startsWith(m + "/"));
@@ -55,7 +55,7 @@ export default function Navbar() {
   return (
     <Box component="header" sx={{ bgcolor: "background.paper", borderBottom: 1, borderColor: "divider", position: "sticky", top: 0, zIndex: 1100 }}>
       <Container maxWidth="xl">
-        <Box sx={{ display: "flex", alignItems: "center", height: 64, gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", height: 60, gap: 2 }}>
           {signedIn && (
             <IconButton
               aria-label="Open menu"
@@ -74,8 +74,9 @@ export default function Navbar() {
               e.preventDefault();
               go(signedIn ? "/dashboard" : "/login");
             }}
-            sx={{ fontWeight: 700, color: "text.primary", textDecoration: "none", whiteSpace: "nowrap" }}
+            sx={{ fontWeight: 700, fontSize: "1.05rem", color: "text.primary", textDecoration: "none", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 1 }}
           >
+            <Box component="span" sx={{ width: 18, height: 18, bgcolor: "primary.main", display: "inline-block" }} />
             MediTracker
           </Typography>
 
@@ -93,9 +94,9 @@ export default function Navbar() {
                     whiteSpace: "nowrap",
                     fontSize: "0.95rem",
                     borderRadius: 0,
-                    height: 64,
+                    height: 60,
                     px: 1.5,
-                    borderBottom: 3,
+                    borderBottom: 2,
                     borderColor: isActive(link) ? "primary.main" : "transparent",
                   }}
                 >
@@ -123,13 +124,9 @@ export default function Navbar() {
                   <SecondaryButton size="small" sx={{ whiteSpace: "nowrap" }} onClick={() => go("/profile")}>
                     My Profile
                   </SecondaryButton>
-                  <PrimaryButton
-                    size="small"
-                    onClick={logout}
-                    sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }}
-                  >
+                  <Button size="small" color="inherit" onClick={logout} sx={{ color: "text.secondary" }}>
                     Logout
-                  </PrimaryButton>
+                  </Button>
                 </Box>
               </>
             ) : (

@@ -22,6 +22,7 @@ import {
 } from "../../api/prescriptionApi";
 import Loading from "../../components/ui/Loading";
 import Navbar from "../../components/ui/Navbar";
+import TimeField12 from "../../components/ui/TimeField12";
 import { useAuthStore } from "../../zustand/authStore";
 import { DOSAGE_UNITS, suggestDosageUnit } from "../../lib/dosageUnit";
 
@@ -317,20 +318,15 @@ export default function AddPrescriptionPage() {
                         "SUNDAY",
                       ].map((d) => (
                         <MenuItem key={d} value={d}>
-                          {d}
+                          {d.charAt(0) + d.slice(1).toLowerCase()}
                         </MenuItem>
                       ))}
                     </TextField>
                   )}
-                  <TextField
-                    label="Time of day"
-                    type="time"
+                  <TimeField12
+                    label="Time"
                     value={row.timeOfDay}
-                    onChange={(e) =>
-                      updateScheduleRow(i, "timeOfDay", e.target.value)
-                    }
-                    sx={{ minWidth: 160 }}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={(v) => updateScheduleRow(i, "timeOfDay", v)}
                   />
                   <FormControlLabel
                     control={

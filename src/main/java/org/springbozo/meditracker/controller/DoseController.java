@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/doses")
 public class DoseController {
 
-    private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("HH:mm");
+    // 12-hour clock, e.g. "8:00 AM"
+    private static final DateTimeFormatter HH_MM = DateTimeFormatter.ofPattern("h:mm a", java.util.Locale.US);
 
     private final UserService userService;
     private final PatientRepository patients;

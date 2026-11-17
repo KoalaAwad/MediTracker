@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediTracker · Calm v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  button { font: inherit; cursor: pointer; }
+
+  :root {
+    --bg: #f4f6f8; --card: #fff; --line: #dfe4ea; --text: #14202b; --muted: #5d6b78;
+    --accent: #0f766e; --on-accent: #fff;
+    /* whole-row status colours: background + border, text stays the normal colour */
+    --now-bg: #fdf0d5;  --now-edge: #d97706;
+    --up-bg: #e3f3f1;   --up-edge: #0f766e;
+    --past-bg: #fde4e4; --past-edge: #dc2626;
+    --taken-bg: #e2f5e7; --taken-edge: #16a34a;
+    --skip-bg: #eef0f3; --skip-edge: #9aa5b1;
+  }
+  body.dark {
+    --bg: #0e1418; --card: #151d23; --line: #2a353f; --text: #e6edf2; --muted: #8fa0ad;
+    --accent: #2dd4bf; --on-accent: #052e2b;
+    --now-bg: #33270e;  --now-edge: #f59e0b;
+    --up-bg: #11302d;   --up-edge: #2dd4bf;
+    --past-bg: #3a1717; --past-edge: #f87171;
+    --taken-bg: #13301d; --taken-edge: #4ade80;
+    --skip-bg: #1d252c; --skip-edge: #66737f;
+  }
+  body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+  .switcher { display: flex; gap: 10px; align-items: center; padding: 8px 16px; background: #1f2430; color: #fff; font-size: 13px; }
+  .switcher button { background: #fff; color: #111; border: 0; padding: 6px 12px; }
+  .switcher span { opacity: .65; }
+
+  header { background: var(--card); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1040px; margin: 0 auto; display: flex; align-items: center; gap: 28px; height: 60px; padding: 0 20px; }
+  .logo { font-weight: 700; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  .logo i { width: 20px; height: 20px; background: var(--accent); display: inline-block; }
+  nav { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+  nav b { color: var(--text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--accent); padding: 20px 0; }
+  .grow { flex: 1; }
+  .btn { background: var(--accent); color: var(--on-accent); border: 0; padding: 9px 14px; font-weight: 600; font-size: 14px; }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 20px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+  h1 { font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin-top: 4px; font-size: 14px; }
+  .progress { height: 6px; background: var(--line); margin: 16px 0 8px; }
+  .progress span { display: block; height: 100%; width: 50%; background: var(--accent); }
+  .group { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin: 22px 0 8px; }
+
+  .dose { display: flex; align-items: center; gap: 16px; padding: 14px 16px; margin-bottom: 6px;
+          background: var(--row-bg); border: 1px solid var(--row-edge); border-left-width: 4px; }
+  .dose.now   { --row-bg: var(--now-bg);   --row-edge: var(--now-edge); }
+  .dose.up    { --row-bg: var(--up-bg);    --row-edge: var(--up-edge); }
+  .dose.past  { --row-bg: var(--past-bg);  --row-edge: var(--past-edge); }
+  .dose.taken { --row-bg: var(--taken-bg); --row-edge: var(--taken-edge); }
+  .dose.skip  { --row-bg: var(--skip-bg);  --row-edge: var(--skip-edge); }
+  .time { font-weight: 700; font-variant-numeric: tabular-nums; width: 52px; }
+  .med { flex: 1; }
+  .med b { font-weight: 600; }
+  .med small { display: block; font-size: 13px; margin-top: 2px; opacity: .8; }
+  .med em { display: block; font-style: normal; font-size: 13px; margin-top: 4px; opacity: .8; }
+  .state { font-size: 13px; font-weight: 600; width: 72px; text-align: right; }
+  .acts { display: flex; gap: 6px; width: 150px; justify-content: flex-end; }
+  .acts .t { background: var(--accent); color: var(--on-accent); border: 0; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+  .acts .s { background: transparent; color: var(--text); border: 1px solid currentColor; opacity: .7; padding: 5px 10px; font-size: 13px; }
+
+  aside .card { background: var(--card); border: 1px solid var(--line); padding: 18px; }
+  aside h3 { font-size: 15px; margin-bottom: 12px; }
+  .label { width: 100%; aspect-ratio: 16/10; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; color: #0b4b8c; font-weight: 800; font-size: 22px; margin-bottom: 12px; }
+  dl { display: grid; grid-template-columns: 90px 1fr; gap: 6px 10px; font-size: 13px; }
+  dt { color: var(--muted); }
+
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; }
+    nav { display: none; }
+    .dose { flex-wrap: wrap; }
+    .acts { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="switcher"><button id="theme">Dark mode</button><span>Calm v2 · sharp corners, whole-row status colours</span></div>
+
+<header><div class="bar">
+  <div class="logo"><i></i>MediTracker</div>
+  <nav><b>Home</b><span>Medicines</span><span>Prescriptions</span></nav>
+  <div class="grow"></div>
+  <button class="btn">+ Add prescription</button>
+</div></header>
+
+<main>
+  <div>
+    <h1>Home</h1>
+    <p class="sub">Tuesday 17 November · 2 of 5 taken</p>
+    <div class="progress"><span></span></div>
+
+    <div class="group">Now</div>
+    <div class="dose now"><div class="time">13:30</div>
+      <div class="med"><b>Prograf 1 mg</b><small>1 capsule</small></div>
+      <span class="state">Now</span>
+      <div class="acts"><button class="t">Taken</button><button class="s">Skip</button></div></div>
+
+    <div class="group">Upcoming</div>
+    <div class="dose up"><div class="time">20:00</div>
+      <div class="med"><b>Prograf 1 mg</b><small>1 capsule</small></div>
+      <span class="state">Upcoming</span>
+      <div class="acts"><button class="t">Taken</button><button class="s">Skip</button></div></div>
+
+    <div class="group">Past</div>
+    <div class="dose taken"><div class="time">09:00</div>
+      <div class="med"><b>Myfortic 360 mg</b><small>1 tablet</small><em>Take with food, an hour after waking up</em></div>
+      <span class="state">Taken</span>
+      <div class="acts"><button class="s">Undo</button></div></div>
+    <div class="dose past"><div class="time">08:00</div>
+      <div class="med"><b>Prograf 1 mg</b><small>1 capsule</small></div>
+      <span class="state">Past</span>
+      <div class="acts"><button class="t">Taken</button><button class="s">Skip</button></div></div>
+    <div class="dose skip"><div class="time">07:00</div>
+      <div class="med"><b>Vitamin D 1000 IU</b><small>1 tablet</small></div>
+      <span class="state">Skipped</span>
+      <div class="acts"><button class="s">Undo</button></div></div>
+  </div>
+
+  <aside><div class="card">
+    <h3>Prograf 1 mg</h3>
+    <div class="label">Prograf® 1 mg</div>
+    <dl><dt>Form</dt><dd>Capsule</dd><dt>Looks like</dt><dd>White capsule, 15 mm, “f 617 1 mg”</dd><dt>Maker</dt><dd>Astellas</dd></dl>
+  </div></aside>
+</main>
+
+<script>
+  document.getElementById("theme").addEventListener("click", (e) => {
+    const dark = document.body.classList.toggle("dark");
+    e.target.textContent = dark ? "Light mode" : "Dark mode";
+  });
+</script>
+</body>
+</html>

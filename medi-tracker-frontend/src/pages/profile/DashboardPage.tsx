@@ -4,7 +4,7 @@ import { PrimaryButton } from "../../components/ui/StyledButton";
 import Navbar from "../../components/ui/Navbar";
 import TodayDoses from "../../components/doses/TodayDoses";
 import RemindersCard from "../../components/doses/RemindersCard";
-import { Box, Container, Paper, Typography, CircularProgress } from "@mui/material";
+import { Box, Container, Typography, CircularProgress } from "@mui/material";
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -42,18 +42,14 @@ export default function Dashboard() {
       {/* Navigation Header */}
       <Navbar />
 
-      {/* Main Content */}
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* Welcome Card */}
-        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" component="h2" color="text.primary" sx={{ fontWeight: 700 }}>
-            Welcome back, {user.name}!
-          </Typography>
-        </Paper>
-
-        <TodayDoses />
-        <RemindersCard />
-
+      {/* today's doses, with reminders beside them (below on phones) */}
+      <Container maxWidth="lg" sx={{ py: { xs: 3, sm: 4 } }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 320px" }, gap: 3, alignItems: "start" }}>
+          <TodayDoses />
+          <Box component="aside" sx={{ mt: { md: 1 } }}>
+            <RemindersCard />
+          </Box>
+        </Box>
       </Container>
     </Box>
   );

@@ -24,6 +24,7 @@ import { useAuthStore } from "../../zustand/authStore";
 import Loading from "../../components/ui/Loading";
 import Navbar from "../../components/ui/Navbar";
 import { PrimaryButton } from "../../components/ui/StyledButton";
+import { INFO_CARD } from "../../lib/theme";
 
 // "CAPSULE, GELATIN COATED" -> "Capsule, gelatin coated"
 function sentenceCase(s?: string) {
@@ -90,7 +91,7 @@ export default function MedicineDetailPage() {
         {error && <Alert severity="error">{error}</Alert>}
 
         {medicine && (
-          <Paper elevation={2} sx={{ p: { xs: 2, sm: 4 } }}>
+          <Paper sx={{ p: { xs: 2, sm: 4 }, ...INFO_CARD }}>
             {!medicine.active && (
               <Alert severity="warning" sx={{ mb: 2 }}>
                 The FDA no longer lists this product. Existing prescriptions still work.

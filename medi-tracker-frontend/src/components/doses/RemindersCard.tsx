@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import { useAuthStore } from "../../zustand/authStore";
+import { INFO_CARD } from "../../lib/theme";
 import { disableReminders, enableReminders, reminderState, ReminderState } from "../../lib/push";
 
 /** Turn dose reminders on or off for the device you're using. */
@@ -40,8 +41,8 @@ export default function RemindersCard() {
     });
 
   return (
-    <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-      <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
+    <Paper sx={{ p: 2.5, ...INFO_CARD }}>
+      <Typography variant="h6" component="h2" sx={{ fontWeight: 600, fontSize: 16, mb: 1 }}>
         Reminders
       </Typography>
 
